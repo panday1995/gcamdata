@@ -1,0 +1,201 @@
+# File: EPA_country_map.csv
+# Title: Map of EPA countries to iso codes and GCAM regions
+# Description: Maps EPA country names to iso country names, iso country codes, and GCAM regions. Used to prepare EPA emissions data from the global emissions projections
+# Units: Unitless
+EPA_country,iso,GCAM_region_ID,iso_country_name
+Afghanistan,afg,27,Afghanistan
+Albania,alb,15,Albania
+Algeria,dza,3,Algeria
+Andorra,and,13,Andorra
+Angola,ago,4,Angola
+Antigua and Barbuda,atg,9,Antigua & Barbuda
+Argentina,arg,31,Argentina
+Armenia,arm,10,Armenia
+Australia,aus,6,Australia
+Austria,aut,13,Austria
+Azerbaijan,aze,10,Azerbaijan
+Bahamas,bhs,9,Bahamas
+Bahrain,bhr,21,Bahrain
+Bangladesh,bgd,27,Bangladesh
+Barbados,brb,9,Barbados
+Belarus,blr,14,Belarus
+Belgium,bel,13,Belgium
+Belize,blz,9,Belize
+Benin,ben,5,Benin
+Bhutan,btn,27,Bhutan
+Bolivia,bol,26,Bolivia
+Bosnia and Herzegovina,bih,15,Bosnia and Herzegovina
+Botswana,bwa,4,Botswana
+Brazil,bra,7,Brazil
+Brunei,brn,29,Brunei Darussalam
+Bulgaria,bgr,12,Bulgaria
+Burkina Faso,bfa,5,Burkina Faso
+Burma,mmr,29,Myanmar
+Burundi,bdi,2,Burundi
+Cambodia,khm,29,Cambodia
+Cameroon,cmr,5,Cameroon
+Canada,can,8,Canada
+Cape Verde,cpv,5,Cape Verde
+Central African Republic,caf,5,Central African Republic
+Chad,tcd,5,Chad
+Chile,chl,26,Chile
+China,chn,11,China
+Colombia,col,32,Colombia
+Comoros,com,2,Comoros
+Congo (Brazzaville),cog,5,Congo
+Congo (Kinshasa),cod,5,"Congo, the Democratic Republic of the"
+Cook Islands,cok,29,Cook Islands
+Costa Rica,cri,9,Costa Rica
+Cote d'Ivoire,civ,5,Cote dIvoire
+Côte d'Ivoire,civ,5,Cote dIvoire
+Croatia,hrv,15,Croatia
+Cuba,cub,9,Cuba
+Cyprus,cyp,12,Cyprus
+Czech Republic,cze,12,Czech Republic
+Denmark,dnk,13,Denmark
+Djibouti,dji,2,Djibouti
+Dominica,dma,9,Dominica
+Dominican Republic,dom,9,Dominican Republic
+Ecuador,ecu,26,Ecuador
+Egypt,egy,3,Egypt
+El Salvador,slv,9,El Salvador
+Equatorial Guinea,gnq,5,Equatorial Guinea
+Eritrea,eri,2,Eritrea
+Estonia,est,12,Estonia
+Ethiopia,eth,2,Ethiopia
+Fiji,fji,29,Fiji
+Finland,fin,13,Finland
+France,fra,13,France
+Gabon,gab,5,Gabon
+Gambia,gmb,5,Gambia
+Georgia,geo,10,Georgia
+Germany,deu,13,Germany
+Ghana,gha,5,Ghana
+Greece,grc,13,Greece
+Grenada,grd,9,Grenada
+Guatemala,gtm,9,Guatemala
+Guinea,gin,5,Guinea
+Guinea-Bissau,gnb,5,Guinea-Bissau
+Guyana,guy,25,Guyana
+Haiti,hti,9,Haiti
+Holy See,vat,13,Vatican
+Honduras,hnd,9,Honduras
+Hungary,hun,12,Hungary
+Iceland,isl,16,Iceland
+India,ind,17,India
+Indonesia,idn,18,Indonesia
+Iran,irn,21,"Iran, Islamic Republic of"
+Iraq,irq,21,Iraq
+Ireland,irl,13,Ireland
+Israel,isr,21,Israel
+Italy,ita,13,Italy
+Jamaica,jam,9,Jamaica
+Japan,jpn,19,Japan
+Jordan,jor,21,Jordan
+Kazakhstan,kaz,10,Kazakhstan
+Kenya,ken,2,Kenya
+Kiribati,kir,29,Kiribati
+Kuwait,kwt,21,Kuwait
+Kyrgyzstan,kgz,10,Kyrgyzstan
+Laos,lao,29,Lao Peoples Democratic Republic
+Latvia,lva,12,Latvia
+Lebanon,lbn,21,Lebanon
+Lesotho,lso,4,Lesotho
+Liberia,lbr,5,Liberia
+Libya,lby,3,Libyan Arab Jamahiriya
+Liechtenstein,lie,16,Liechtenstein
+Lithuania,ltu,12,Lithuania
+Luxembourg,lux,13,Luxembourg
+Macedonia,mkd,15,"Macedonia, the former Yugoslav Republic of"
+Madagascar,mdg,2,Madagascar
+Malawi,mwi,4,Malawi
+Malaysia,mys,29,Malaysia
+Maldives,mdv,27,Maldives
+Mali,mli,5,Mali
+Malta,mlt,12,Malta
+Marshall Islands,mhl,29,Marshall Islands
+Mauritania,mrt,5,Mauritania
+Mauritius,mus,2,Mauritius
+Mexico,mex,20,Mexico
+Micronesia (Federated States of),fsm,29,"Micronesia, Federated States of"
+Moldova,mda,14,"Moldova, Republic of"
+Monaco,mco,13,Monaco
+Mongolia,mng,10,Mongolia
+Montenegro,mne,15,Montenegro
+Morocco,mar,3,Morocco
+Mozambique,moz,4,Mozambique
+Namibia,nam,4,Namibia
+Nauru,nru,29,Nauru
+Nepal,npl,27,Nepal
+Netherlands,nld,13,Netherlands
+New Zealand,nzl,6,New Zealand
+Nicaragua,nic,9,Nicaragua
+Niger,ner,5,Niger
+Nigeria,nga,5,Nigeria
+Niue,niu,29,Niue
+North Korea,prk,29,"Korea, Democratic Peoples Republic of"
+Norway,nor,16,Norway
+Oman,omn,21,Oman
+Pakistan,pak,22,Pakistan
+Palau,plw,29,Palau
+Panama,pan,9,Panama
+Papua New Guinea,png,29,Papua New Guinea
+Paraguay,pry,26,Paraguay
+Peru,per,26,Peru
+Philippines,phl,29,Philippines
+Poland,pol,12,Poland
+Portugal,prt,13,Portugal
+Qatar,qat,21,Qatar
+Romania,rom,12,Romania
+Russia,rus,23,Russian Federation
+Rwanda,rwa,2,Rwanda
+Saint Kitts and Nevis,kna,9,Saint Kitts and Nevis
+Saint Lucia,lca,9,Saint Lucia
+Saint Vincent and the Grenadines,vct,9,Saint Vincent and the Grenadines
+Samoa,wsm,29,Samoa
+San Marino,smr,13,San Marino
+Sao Tome and Principe,stp,5,Sao Tome and Principe
+Saudi Arabia,sau,21,Saudi Arabia
+Senegal,sen,5,Senegal
+Serbia,srb,15,Serbia
+Seychelles,syc,29,Seychelles
+Sierra Leone,sle,5,Sierra Leone
+Singapore,sgp,29,Singapore
+Slovakia,svk,12,Slovakia
+Slovenia,svn,12,Slovenia
+Solomon Islands,slb,29,Solomon Islands
+Somalia,som,2,Somalia
+South Africa,zaf,24,South Africa
+South Korea,kor,28,"Korea, Republic of"
+Spain,esp,13,Spain
+Sri Lanka,lka,27,Sri Lanka
+Sudan,sdn,2,Sudan
+Suriname,sur,25,Suriname
+Swaziland,swz,4,Swaziland
+Sweden,swe,13,Sweden
+Switzerland,che,16,Switzerland
+Syria,syr,21,Syrian Arab Republic
+Tajikistan,tjk,10,Tajikistan
+Tanzania,tza,4,"Tanzania, United Republic of"
+Thailand,tha,29,Thailand
+Timor-Leste,tls,29,Timor Leste
+Togo,tgo,5,Togo
+Tonga,ton,29,Tonga
+Trinidad and Tobago,tto,9,Trinidad and Tobago
+Tunisia,tun,3,Tunisia
+Turkey,tur,15,Turkey
+Turkmenistan,tkm,10,Turkmenistan
+Tuvalu,tuv,29,Tuvalu
+Uganda,uga,2,Uganda
+Ukraine,ukr,14,Ukraine
+United Arab Emirates,are,21,United Arab Emirates
+United Kingdom,gbr,13,United Kingdom
+United States,usa,1,United States of America
+Uruguay,ury,26,Uruguay
+Uzbekistan,uzb,10,Uzbekistan
+Vanuatu,vut,29,Vanuatu
+Venezuela,ven,25,Venezuela
+Vietnam,vnm,29,Viet Nam
+Yemen,yem,21,Yemen
+Zambia,zmb,4,Zambia
+Zimbabwe,zwe,4,Zimbabwe

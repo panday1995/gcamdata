@@ -1,0 +1,21 @@
+# File: EPA_GWPs.csv
+# Title: GWPs for EPA non-CO2 GHGs
+# Units: unitless
+# Source: EPA global emissions projections, Table 4.1 https://www.epa.gov/sites/production/files/2016-08/documents/epa_global_nonco2_projections_dec2012.pdf
+gas,gwp
+CH4,21
+N2O,310
+HFC23,11700
+HFC32,650
+HFC125,2800
+HFC134a,1300
+HFC143a,3800
+HFC152a,140
+HFC227ea,2900
+HFC43,1300
+HFC236fa,6300
+HFC365mfc,890
+HFC245fa,950
+CF4,6500
+C2F6,9200
+SF6,23900

@@ -1,0 +1,46 @@
+# File: EPA_sector_map.csv
+# Title: Map of EPA sectors to GCAM sectors
+# Description: Detailed and aggregate EPA global emissions projections sectors mapped to their gas sources
+# Units: Unitless
+EPA_sector,EPA_agg_sector,EPA_gas
+Natural Gas & Oil Systems,Energy,CH4
+Coal Mining Activities,Energy,CH4
+Stationary & Mobile Combustion,Energy,CH4
+Stationary & Mobile Combustion,Energy,N2O
+Biomass Combustion,Energy,N2O
+Biomass Combustion,Energy,CH4
+"Other Energy Sources (Fugitives from Natural Gas & Oil, Fugitives from Solid Fuels)",Energy,CH4
+"Other Energy Sources (Fugitives from Natural Gas & Oil, Fugitives from Solid Fuels)",Energy,N2O
+Production of Adipic & Nitric Acid,Industrial Processes,N2O
+ODS Substitutes: Refrigeration / Air Conditioning,Industrial Processes,HFCs
+ODS Substitutes: Foam Blowing,Industrial Processes,HFCs
+ODS Substitutes: Solvents,Industrial Processes,HFCs
+ODS Substitutes: MDI Aerosols,Industrial Processes,HFCs
+ODS Substitutes: Fire Extinguishing,Industrial Processes,HFCs
+Production of HCFC-22,Industrial Processes,HFCs
+Electric Power Systems,Industrial Processes,SF6
+Aluminum,Industrial Processes,PFCs
+Manufacture of Semiconductors,Industrial Processes,PFCs
+Manufacture of Semiconductors,Industrial Processes,SF6
+Manufacture of Semiconductors,Industrial Processes,HFCs
+Manufacture of Semiconductors,Industrial Processes,NF3
+Magnesium Manufacturing,Industrial Processes,SF6
+Flat Panel Display Manufacturing,Industrial Processes,PFCs
+Flat Panel Display Manufacturing,Industrial Processes,SF6
+Flat Panel Display Manufacturing,Industrial Processes,NF3
+Photovoltaic Manufacturing,Industrial Processes,PFCs
+Photovoltaic Manufacturing,Industrial Processes,NF3
+"Other IP (Chemical, Iron and Steel, Metal, Mineral, Petrochemical, Silicon Carbide, Solvents)",Industrial Processes,CH4
+"Other IP (Chemical, Iron and Steel, Metal, Mineral, Petrochemical, Silicon Carbide, Solvents)",Industrial Processes,N2O
+Agricultural Soils,Agriculture,N2O
+Enteric Fermentation,Agriculture,CH4
+Rice Cultivation,Agriculture,CH4
+Manure Management,Agriculture,N2O
+Manure Management,Agriculture,CH4
+"Other Agriculture Sources (Savanna Burning, Ag Res Burning, Ag Soils)",Agriculture,CH4
+"Other Agriculture Sources (Savanna Burning, Ag Res Burning, Ag Soils)",Agriculture,N2O
+Landfilling of Solid Waste,Waste,CH4
+Wastewater,Waste,CH4
+Human Sewage - Domestic Wastewater,Waste,N2O
+"Other Waste Sources (Misc Waste Handling Practices, Waste Combustion)",Waste,CH4
+"Other Waste Sources (Misc Waste Handling Practices, Waste Combustion)",Waste,N2O

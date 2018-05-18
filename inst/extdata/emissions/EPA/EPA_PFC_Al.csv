@@ -1,0 +1,200 @@
+# File: EPA_PFC_Al.csv,,,,,,,,,,,,
+# Title: PFC emissions from aluminum,,,,,,,,,,,,
+# Description: PFC emissions from Aluminum production,,,,,,,,,,,,
+# Units: MtCO2e,,,,,,,,,,,,
+Country,1990,1995,2000,2005,2010,2015,2020,2025,2030,Rest_of_Region,Main_Region,Secondary_Region
+Afghanistan,0,0,0,0,0,0,0,0,0,Non-OECD Asia,,
+Albania,0,0,0,0,0,0,0,0,0,,Non-OECD Europe & Eurasia,
+Algeria,0,0,0,0,0,0,0,0,0,,Africa,OPEC
+Andorra,0,0,0,0,0,0,0,0,0,Non-OECD Europe & Eurasia,,
+Angola,0,0,0,0,0,0,0,0,0,Africa,,OPEC
+Antigua and Barbuda,0,0,0,0,0,0,0,0,0,Central and South America,,
+Argentina,1.57517,0.495823333,0.3261,0.174557912,0.134228237,0.148577394,0.159337851,0.171436929,0.185125925,,Central and South America,
+Armenia,0,0,0,0,0,0,0,0,0,,Non-OECD Europe & Eurasia,
+Australia,3.950125399,1.312562597,1.103547038,1.536232745,0.781947174,0.841067936,0.903364843,0.973848075,1.053593382,,OECD,
+Austria,1.050189959,0,0,0,0,0,0,0,0,,OECD,EU
+Azerbaijan,0,0.01228047,0,0.033040818,0.01565421,0.017327664,0.019604661,0.022180875,0.025095624,,Non-OECD Europe & Eurasia,
+Bahamas,0,0,0,0,0,0,0,0,0,Central and South America,,
+Bahrain,0.094011945,0.13,0.095823725,0.073320762,0.042622703,0.044744133,0.048139839,0.051981768,0.056328559,Middle East,,
+Bangladesh,0,0,0,0,0,0,0,0,0,,Non-OECD Asia,
+Barbados,0,0,0,0,0,0,0,0,0,Central and South America,,
+Belarus,0,0,0,0,0,0,0,0,0,,Non-OECD Europe & Eurasia,
+Belgium,0,0,0,0,0,0,0,0,0,,OECD,EU
+Belize,0,0,0,0,0,0,0,0,0,Central and South America,,
+Benin,0,0,0,0,0,0,0,0,0,Africa,,
+Bhutan,0,0,0,0,0,0,0,0,0,Non-OECD Asia,,
+Bolivia,0,0,0,0,0,0,0,0,0,,Central and South America,
+Bosnia and Herzegovina,0,0.030701174,0.190473529,0.136515729,0.061573228,0.068155479,0.074560323,0.080110417,0.086389838,Non-OECD Europe & Eurasia,,
+Botswana,0,0,0,0,0,0,0,0,0,Africa,,
+Brazil,2.2022,2.2282,1.0659,0.898,0.46125731,0.501152848,0.537900732,0.579477589,0.626517987,,Central and South America,
+Brunei,0,0,0,0,0,0,0,0,0,Non-OECD Asia,,
+Bulgaria,0,0,0,0,0,0,0,0,0,,Non-OECD Europe & Eurasia,EU
+Burkina Faso,0,0,0,0,0,0,0,0,0,Africa,,
+Burma,0,0,0,0,0,0,0,0,0,,Non-OECD Asia,
+Burundi,0,0,0,0,0,0,0,0,0,Africa,,
+Cambodia,0,0,0,0,0,0,0,0,0,,Non-OECD Asia,
+Cameroon,0.437194368,0.242539277,0.173198582,0.09403973,0.039657333,0.043896749,0.049665142,0.05386632,0.057910693,Africa,,
+Canada,6.538834525,5.46206797,4.281190966,3.308636855,1.701690832,1.81789155,1.953463464,2.106850641,2.280394153,,OECD,
+Cape Verde,0,0,0,0,0,0,0,0,0,Africa,,
+Central African Republic,0,0,0,0,0,0,0,0,0,Africa,,
+Chad,0,0,0,0,0,0,0,0,0,Africa,,
+Chile,0,0,0,0,0,0,0,0,0,,OECD,
+China,3.045667447,5.219355654,6.973771651,5.608914877,11.09124047,12.64643787,14.30828367,16.18850965,18.31581278,,Non-OECD Asia,
+Colombia,0,0,0.1484,0.547,0,0,0,0,0,,Central and South America,
+Comoros,0,0,0,0,0,0,0,0,0,Africa,,
+Congo (Brazzaville),0,0,0,0,0,0,0,0,0,Africa,,
+Congo (Kinshasa),0,0,0,0,0,0,0,0,0,,Africa,
+Cook Islands,0,0,0,0,0,0,0,0,0,Non-OECD Asia,,
+Costa Rica,0,0,0,0,0,0,0,0,0,Central and South America,,
+Cote d'Ivoire,0,0,0,0,0,0,0,0,0,Africa,,
+Croatia,0.936564272,0,0,0,0,0,0,0,0,,Non-OECD Europe & Eurasia,
+Cuba,0,0,0,0,0,0,0,0,0,Central and South America,,
+Cyprus,0,0,0,0,0,0,0,0,0,Non-OECD Europe & Eurasia,,EU
+Czech Republic,0,0,0,0,0,0,0,0,0,,OECD,EU
+Denmark,0,0,0,0,0,0,0,0,0,,OECD,EU
+Djibouti,0,0,0,0,0,0,0,0,0,Africa,,
+Dominica,0,0,0,0,0,0,0,0,0,Central and South America,,
+Dominican Republic,0,0,0,0,0,0,0,0,0,Central and South America,,
+Ecuador,0,0,0,0,0,0,0,0,0,,Central and South America,OPEC
+Egypt,2.39825617,1.574992251,1.08,0.722815698,0.395587426,0.424087027,0.45560306,0.491260559,0.531603745,,Africa,
+El Salvador,0,0,0,0,0,0,0,0,0,Central and South America,,
+Equatorial Guinea,0,0,0,0,0,0,0,0,0,Africa,,
+Eritrea,0,0,0,0,0,0,0,0,0,Africa,,
+Estonia,0,0,0,0,0,0,0,0,0,,Non-OECD Europe & Eurasia,EU
+Ethiopia,0,0,0,0,0,0,0,0,0,,Africa,
+Fiji,0,0,0,0,0,0,0,0,0,Non-OECD Asia,,
+Finland,0,0,0,0,0,0,0,0,0,,OECD,EU
+France,3.031767,1.773655,1.623281,0.699234088,0.282307632,0.276192666,0.276192666,0.276192666,0.276192666,,OECD,EU
+Gabon,0,0,0,0,0,0,0,0,0,Africa,,
+Gambia,0,0,0,0,0,0,0,0,0,Africa,,
+Georgia,0,0,0,0,0,0,0,0,0,,Non-OECD Europe & Eurasia,
+Germany,2.48941,1.5517,0.35616,0.33755624,0.102962377,0.100732146,0.100732146,0.100732146,0.100732146,,OECD,EU
+Ghana,0.547,0.417,0.065,0.003298599,0,0,0,0,0,Africa,,
+Greece,0.263380928,0.085778708,0.151697405,0.0730505,0.049,0.045,0.042,0.04502632,0.048450324,,OECD,EU
+Grenada,0,0,0,0,0,0,0,0,0,Central and South America,,
+Guatemala,0,0,0,0,0,0,0,0,0,Central and South America,,
+Guinea,0,0,0,0,0,0,0,0,0,Africa,,
+Guinea-Bissau,0,0,0,0,0,0,0,0,0,Africa,,
+Guyana,0,0,0,0,0,0,0,0,0,Central and South America,,
+Haiti,0,0,0,0,0,0,0,0,0,Central and South America,,
+Holy See,0,0,0,0,0,0,0,0,0,Non-OECD Europe & Eurasia,,
+Honduras,0,0,0,0,0,0,0,0,0,Central and South America,,
+Hungary,0.27083,0.16682386,0.210728,0.20783791,0,0,0,0,0,,OECD,EU
+Iceland,0.41963127,0.058844041,0.127163084,0.026093908,0.037479483,0.039923386,0.042909337,0.046287666,0.050109936,,OECD,
+India,2.035539371,1.64865306,1.290608531,0.980343385,0.756620172,0.837503762,0.9022756,0.970475904,1.047638289,,Non-OECD Asia,
+Indonesia,0.874388737,0.675425834,0.320797522,0.26245823,0.131495368,0.140908026,0.151384123,0.163236866,0.176647156,,Non-OECD Asia,
+Iran,0.282060883,0.365343974,0.280697832,0.228857751,0.130451754,0.1443972,0.163372178,0.184840624,0.2091302,,Middle East,OPEC
+Iraq,0,0,0,0,0,0,0,0,0,,Middle East,OPEC
+Ireland,0,0,0,0,0,0,0,0,0,,OECD,EU
+Israel,0,0,0,0,0,0,0,0,0,,OECD,
+Italy,1.673352387,0.297504371,0.19820675,0.182138983,0.079569555,0.088075634,0.097123259,0.104295507,0.112410248,,OECD,EU
+Jamaica,0,0,0,0,0,0,0,0,0,Central and South America,,
+Japan,0.349873872,0.069735583,0.017784901,0.014801212,0.007081783,0.007838833,0.008868921,0.01003437,0.011352968,,OECD,
+Jordan,0,0,0,0,0,0,0,0,0,,Middle East,
+Kazakhstan,0,0,0,0,0.08717016,0.095335381,0.102280136,0.110137488,0.119027361,,Non-OECD Europe & Eurasia,
+Kenya,0,0,0,0,0,0,0,0,0,Africa,,
+Kiribati,0,0,0,0,0,0,0,0,0,Non-OECD Asia,,
+Kuwait,0,0,0,0,0,0,0,0,0,,Middle East,OPEC
+Kyrgyzstan,0,0,0,0,0,0,0,0,0,,Non-OECD Europe & Eurasia,
+Laos,0,0,0,0,0,0,0,0,0,,Non-OECD Asia,
+Latvia,0,0,0,0,0,0,0,0,0,,Non-OECD Europe & Eurasia,EU
+Lebanon,0,0,0,0,0,0,0,0,0,Middle East,,
+Lesotho,0,0,0,0,0,0,0,0,0,Africa,,
+Liberia,0,0,0,0,0,0,0,0,0,Africa,,
+Libya,0,0,0,0,0,0,0,0,0,Africa,,OPEC
+Liechtenstein,0,0,0,0,0,0,0,0,0,Non-OECD Europe & Eurasia,#REF!,
+Lithuania,0,0,0,0,0,0,0,0,0,,Non-OECD Europe & Eurasia,EU
+Luxembourg,0,0,0,0,0,0,0,0,0,,OECD,EU
+Macedonia,0,0,0,0,0,0,0,0,0,,Non-OECD Europe & Eurasia,
+Madagascar,0,0,0,0,0,0,0,0,0,Africa,,
+Malawi,0,0,0,0,0,0,0,0,0,Africa,,
+Malaysia,0,0,0,0,0,0,0,0,0,Non-OECD Asia,,
+Maldives,0,0,0,0,0,0,0,0,0,Non-OECD Asia,,
+Mali,0,0,0,0,0,0,0,0,0,Africa,,
+Malta,0,0,0,0,0,0,0,0,0,Non-OECD Europe & Eurasia,,EU
+Marshall Islands,0,0,0,0,0,0,0,0,0,Non-OECD Asia,,
+Mauritania,0,0,0,0,0,0,0,0,0,Africa,,
+Mauritius,0,0,0,0,0,0,0,0,0,Africa,,
+Mexico,0.70165,0.64036,0.63617,0,0,0,0,0,0,,OECD,
+Micronesia (Federated States of),0,0,0,0,0,0,0,0,0,Non-OECD Asia,,
+Moldova,0,0,0,0,0,0,0,0,0,,Non-OECD Europe & Eurasia,
+Monaco,0,0,0,0,0,0,0,0,0,,Non-OECD Europe & Eurasia,
+Mongolia,0,0,0,0,0,0,0,0,0,,Non-OECD Asia,
+Montenegro,1.4424,1.5334,1.6244,1.120493995,0.384325488,0.425410336,0.481312748,0.544561196,0.592548169,Non-OECD Europe & Eurasia,,
+Morocco,0,0,0,0,0,0,0,0,0,Africa,,
+Mozambique,0,0,0.107868167,0.577345691,0.290646507,0.305971462,0.329126963,0.355325287,0.384966286,Africa,,
+Namibia,0,0,0,0,0,0,0,0,0,Africa,,
+Nauru,0,0,0,0,0,0,0,0,0,Non-OECD Asia,,
+Nepal,0,0,0,0,0,0,0,0,0,,Non-OECD Asia,
+Netherlands,2.2462138,1.9007841,1.3881928,0.0880052,0.040748647,0.045019233,0.048265634,0.05193864,0.056094309,,OECD,EU
+New Zealand,0.62987,0.125558,0.058059,0.05957,0.02925171,0.030941263,0.033271716,0.035908409,0.038891586,,OECD,
+Nicaragua,0,0,0,0,0,0,0,0,0,Central and South America,,
+Niger,0,0,0,0,0,0,0,0,0,Africa,,
+Nigeria,0,0,0,0,0.010957947,0.051050434,0.051050434,0.051050434,0.051050434,,Africa,OPEC
+Niue,0,0,0,0,0,0,0,0,0,Non-OECD Asia,,
+North Korea,0,0,0,0,0,0,0,0,0,,Non-OECD Asia,
+Norway,3.370400605,2.007716443,1.317862709,0.82860803,0.242708802,0.268654659,0.303958088,0.343900677,0.38909205,,OECD,
+Oman,0,0,0,0,0.191503175,0.199223689,0.214480545,0.231742278,0.251272343,Middle East,,
+Pakistan,0,0,0,0,0,0,0,0,0,,Non-OECD Asia,
+Palau,0,0,0,0,0,0,0,0,0,Non-OECD Asia,,
+Panama,0,0,0,0,0,0,0,0,0,Central and South America,,
+Papua New Guinea,0,0,0,0,0,0,0,0,0,Non-OECD Asia,,
+Paraguay,0,0,0,0,0,0,0,0,0,Central and South America,,
+Peru,0,0,0,0,0,0,0,0,0,,Central and South America,
+Philippines,0,0,0,0,0,0,0,0,0,,Non-OECD Asia,
+Poland,0.208087519,0.252236074,0.236878677,0.242522848,0,0,0,0,0,,OECD,EU
+Portugal,0,0,0,0,0,0,0,0,0,,OECD,EU
+Qatar,0,0,0,0,0.099143333,0.298645038,0.298645038,0.298645038,0.298645038,Middle East,,OPEC
+Romania,2.115834518,1.7735284,1.292099174,0.08181424,0.035544165,0.034774255,0.034774255,0.034774255,0.034774255,,Non-OECD Europe & Eurasia,EU
+Russia,11.65407884,10.00176101,7.222322582,4.60732569,2.499137456,2.752943015,2.952046661,3.177314161,3.43218366,,Non-OECD Europe & Eurasia,
+Rwanda,0,0,0,0,0,0,0,0,0,Africa,,
+Saint Kitts and Nevis,0,0,0,0,0,0,0,0,0,Central and South America,,
+Saint Lucia,0,0,0,0,0,0,0,0,0,Central and South America,,
+Saint Vincent and the Grenadines,0,0,0,0,0,0,0,0,0,Central and South America,,
+Samoa,0,0,0,0,0,0,0,0,0,Non-OECD Asia,,
+San Marino,0,0,0,0,0,0,0,0,0,Non-OECD Europe & Eurasia,,
+Sao Tome and Principe,0,0,0,0,0,0,0,0,0,Africa,,
+Saudi Arabia,0,0,0,0,0,0.103456759,0.206913519,0.206913519,0.206913519,,Middle East,OPEC
+Senegal,0,0,0,0,0,0,0,0,0,,Africa,
+Serbia,0,0,0,0,0,0,0,0,0,Non-OECD Europe & Eurasia,,
+Seychelles,0,0,0,0,0,0,0,0,0,Africa,,
+Sierra Leone,0,0,0,0,0,0,0,0,0,Africa,,
+Singapore,0,0,0,0,0,0,0,0,0,,Non-OECD Asia,
+Slovakia,0.27137262,0.11432494,0.011407374,0.020056536,0.01035274,0.010773178,0.01159797,0.012531146,0.013586949,,OECD,EU
+Slovenia,0.25744432,0.106484,0.105612,0.132731353,0.019313822,0.021378492,0.024187802,0.027366278,0.030962431,,OECD,EU
+Solomon Islands,0,0,0,0,0,0,0,0,0,Non-OECD Asia,,
+Somalia,0,0,0,0,0,0,0,0,0,Africa,,
+South Africa,0.74746134,0.703056891,1.350328999,0.880283656,0.421098261,0.411977001,0.411977001,0.411977001,0.411977001,,Africa,
+South Korea,0.009402029,0,0,0,0,0,0,0,0,,OECD,
+Spain,0.882916552,0.832161868,0.37028453,0.143191973,0.061950945,0.068573575,0.075389402,0.080973542,0.087291485,,OECD,EU
+Sri Lanka,0,0,0,0,0,0,0,0,0,Non-OECD Asia,,
+Sudan,0,0,0,0,0,0,0,0,0,Africa,,
+Suriname,0.150432471,0.085963288,0,0,0,0,0,0,0,Central and South America,,
+Swaziland,0,0,0,0,0,0,0,0,0,Africa,,
+Sweden,0.376818888,0.334648398,0.232700393,0.255380417,0.116456002,0.128905286,0.145844499,0.156869187,0.168745718,,OECD,EU
+Switzerland,0.100170883,0.012979766,0.00962369,0.01061536,0,0,0,0,0,,OECD,
+Syria,0,0,0,0,0,0,0,0,0,Middle East,,
+Tajikistan,0,0.712267244,0.539741831,0.394914855,0.182032377,0.201491853,0.227969538,0.245172436,0.263736641,,Non-OECD Europe & Eurasia,
+Tanzania,0,0,0,0,0,0,0,0,0,Africa,,
+Thailand,0,0,0,0,0,0,0,0,0,,Non-OECD Asia,
+Timor-Leste,0,0,0,0,0,0,0,0,0,Non-OECD Asia,,
+Togo,0,0,0,0,0,0,0,0,0,Africa,,
+Tonga,0,0,0,0,0,0,0,0,0,Non-OECD Asia,,
+Trinidad and Tobago,0,0,0,0,0,0,0,0,0,Central and South America,,
+Tunisia,0,0,0,0,0,0,0,0,0,Africa,,
+Turkey,0.603434198,0.516429067,0.515123073,0.487758052,0.244664757,0.25659341,0.276085593,0.29813921,0.323090852,,OECD,
+Turkmenistan,0,0,0,0,0,0,0,0,0,,Non-OECD Europe & Eurasia,
+Tuvalu,0,0,0,0,0,0,0,0,0,Non-OECD Asia,,
+Uganda,0,0,0,0,0,0,0,0,0,,Africa,
+Ukraine,0.203226667,0.153449911,0.099741387,0.122660141,0.013466448,0.014906028,0.016864802,0.019080976,0.021588373,,Non-OECD Europe & Eurasia,
+United Arab Emirates,0.81797656,0.758319005,0.942342721,0.751069529,0.730529821,0.982011435,0.982011435,0.982011435,0.982011435,,Middle East,OPEC
+United Kingdom,1.332745931,0.286286696,0.257455254,0.060015028,0.056,0.056,0.056,0.060190554,0.064931781,,OECD,EU
+United States,18.53876844,11.83179191,8.573996054,2.95645603,3.736559372,3.691696961,3.647421192,3.647421192,3.647421192,,OECD,
+Uruguay,0,0,0,0,0,0,0,0,0,,Central and South America,
+Uzbekistan,0,0,0,0,0,0,0,0,0,,Non-OECD Europe & Eurasia,
+Vanuatu,0,0,0,0,0,0,0,0,0,Non-OECD Asia,,
+Venezuela,2.773598681,1.934173981,1.144585509,0.639834259,0.17480535,0.193492248,0.218918719,0.247686437,0.280234469,,Central and South America,OPEC
+Vietnam,0,0,0,0,0,0,0,0,0,,Non-OECD Asia,
+Yemen,0,0,0,0,0,0,0,0,0,Middle East,,
+Zambia,0,0,0,0,0,0,0,0,0,Africa,,
+Zimbabwe,0,0,0,0,0,0,0,0,0,Africa,,
