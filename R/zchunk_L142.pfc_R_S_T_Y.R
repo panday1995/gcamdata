@@ -35,7 +35,6 @@ module_emissions_L142.pfc_R_S_T_Y <- function(command, ...) {
              FILE = "emissions/EPA/EPA_SF6_FPD",
              FILE = "emissions/EPA/EPA_SF6_Magn",
              FILE = "emissions/EPA/EPA_SF6_Semi",
-             FILE = "emissions/EPA_sector_map",
              FILE = "emissions/EPA_fgas_sector_map",
              FILE = "emissions/EPA_GWPs",
              FILE = "emissions/EPA_country_map"))
@@ -77,7 +76,6 @@ module_emissions_L142.pfc_R_S_T_Y <- function(command, ...) {
     EPA_SF6_FPD <- get_data(all_data, "emissions/EPA/EPA_SF6_FPD")
     EPA_SF6_Magn <- get_data(all_data, "emissions/EPA/EPA_SF6_Magn")
     EPA_SF6_Semi <- get_data(all_data, "emissions/EPA/EPA_SF6_Semi")
-    EPA_sector_map <- get_data(all_data, "emissions/EPA_sector_map")
     EPA_fgas_sector_map <- get_data(all_data, "emissions/EPA_fgas_sector_map")
     EPA_GWPs <- get_data(all_data, "emissions/EPA_GWPs")
     EPA_country_map <- get_data(all_data, "emissions/EPA_country_map")
@@ -178,7 +176,6 @@ module_emissions_L142.pfc_R_S_T_Y <- function(command, ...) {
     # =========================================================
     # NEW DATA FLOW - SCALE EDGAR EMISSIONS TO MATCH EPA TOTALS
     # =========================================================
-    emissions.DATA_SOURCE <- "EPA"
 
     if (emissions.DATA_SOURCE == "EPA") {
 
@@ -256,7 +253,7 @@ module_emissions_L142.pfc_R_S_T_Y <- function(command, ...) {
       # Adjust EDGAR individual ggs of gas to EPA's GWP values to be able to aggregate multiple gases together for scaling
       L142.pfc_R_S_T_Yh_base %>%
         left_join_error_no_match(EPA_GWPs, by = c("Non.CO2" = "gas")) %>%
-        mutate(emissions = value * gwp * gg_to_tg) %>%
+        mutate(emissions = value * gwp * CONV_GG_TG) %>%
         select(-gwp, -value) ->
         L142.pfc_R_S_T_Yh_GWP
 
@@ -389,7 +386,7 @@ module_emissions_L142.pfc_R_S_T_Y <- function(command, ...) {
         rename(value = adj_emissions) %>%
         # remove CO2 equivalence used for matching, returning units to gg
         left_join_error_no_match(EPA_GWPs, by = c("Non.CO2" = "gas")) %>%
-        mutate(value = value / gwp / gg_to_tg) %>%
+        mutate(value = value / gwp / CONV_GG_TG) %>%
         select(-gwp) %>%
         filter(year %in% EPA_YEARS) ->
         L142.EPA_PFC_R_S_T_Yh
@@ -418,7 +415,18 @@ module_emissions_L142.pfc_R_S_T_Y <- function(command, ...) {
                      "emissions/A41.GWP",
                      "emissions/EDGAR/EDGAR_SF6",
                      "emissions/EDGAR/EDGAR_C2F6",
-                     "emissions/EDGAR/EDGAR_CF4") %>%
+                     "emissions/EDGAR/EDGAR_CF4",
+                     "emissions/EPA/EPA_PFC_Al",
+                     "emissions/EPA/EPA_PFC_FPD",
+                     "emissions/EPA/EPA_PFC_PV",
+                     "emissions/EPA/EPA_PFC_Semi",
+                     "emissions/EPA/EPA_SF6_EPS",
+                     "emissions/EPA/EPA_SF6_FPD",
+                     "emissions/EPA/EPA_SF6_Magn",
+                     "emissions/EPA/EPA_SF6_Semi",
+                     "emissions/EPA_fgas_sector_map",
+                     "emissions/EPA_GWPs",
+                     "emissions/EPA_country_map") %>%
       add_flags(FLAG_LONG_YEAR_FORM, FLAG_NO_XYEAR, FLAG_SUM_TEST) ->
       L142.pfc_R_S_T_Yh
 

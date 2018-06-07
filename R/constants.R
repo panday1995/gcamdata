@@ -423,7 +423,7 @@ CONV_T_METRIC_SHORT <- 1000 / 908  # Ratio between metric ton and short ton
 CONV_HA_BM2 <- 1e-5
 CONV_HA_M2 <- 10000
 CONV_THA_KGM2 <- 0.1   # tons C/ha -> kg C/m2
-CONV_GG_TG <- 0.001 # gigagrams to tegagrams
+CONV_GG_TG <- 0.001 # gigagrams to teragrams
 CONV_TST_TG <- 0.000907 # thousand short tons to Tg
 CONV_KG_TO_TG <- 1e-9
 CONV_KT_MT <- 0.001 # kt to Mt
@@ -510,6 +510,9 @@ water.WATER_UNITS_QUANTITY                <- "km^3"
 
 
 # Emissions constants ======================================================================
+
+# Flag which emissions data to use. Value "EPA" uses EPA data. All other values use EDGAR data.
+emissions.DATA_SOURCE <- "EPA"
 
 # Time
 emissions.CTRL_BASE_YEAR          <- 1975                # Year to read in pollution controls
