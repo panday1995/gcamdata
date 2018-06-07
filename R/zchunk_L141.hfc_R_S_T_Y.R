@@ -426,7 +426,7 @@ module_emissions_L141.hfc_R_S_T_Y <- function(command, ...) {
         rename(SSP2_tot = Emissions)
 
       # Add SSP2 values to EDGAR HFC emissions then calculate scalar
-      L141.hfc_scaler <- L141.hfc_R_S_T_Yh_share %>%
+      L141.hfc_scaler <- L141.hfc_R_S_T_Yh_coolshare %>%
         group_by(year, Non.CO2) %>%
         summarize(EDGAR_tot = sum(emissions)) %>%
         arrange(Non.CO2, year) %>%
@@ -438,7 +438,7 @@ module_emissions_L141.hfc_R_S_T_Y <- function(command, ...) {
         select(year, Non.CO2, scaler)
 
       # Add scalar to HFC emissions, calculate adjusted emissions
-      L141.hfc_R_S_T_Yh <- L141.hfc_R_S_T_Yh_share %>%
+      L141.hfc_R_S_T_Yh <- L141.hfc_R_S_T_Yh_coolshare %>%
         left_join(L141.hfc_scaler, by = c("year", "Non.CO2")) %>% # there should be NA's, as not all sectors have emissions/scalers
         mutate(adj_emissions = emissions * scaler) %>%
         group_by(GCAM_region_ID, supplysector, subsector, stub.technology, Non.CO2, year) %>%
