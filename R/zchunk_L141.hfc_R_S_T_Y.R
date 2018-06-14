@@ -359,36 +359,6 @@ module_emissions_L141.hfc_R_S_T_Y <- function(command, ...) {
         filter(year %in% EPA_YEARS) ->
         L141.EPA_HFC_R_S_T_Yh_adj
 
-      ## OLD METHOD -- SHARED OUT EPA EMISSIONS PROPORTIONALLY TO EACH SECTOR
-      ## ====================================================================
-      ## Calculate share of EDGAR emissions to resid and comm cooling and to each individual gas
-      # L141.hfc_R_S_T_Yh_share_totalHFC %>%
-      #   select(-supplysector) %>% # removes supplysector column with separate resid/comm cooling to avoid duplication of columns
-      #   left_join(L141.hfc_R_S_T_Yh_share_GWP, by = c("subsector", "stub.technology", "EPA_sector",
-      #                                             "EDGAR_agg_sector", "MAC_type1", "GCAM_region_ID", "year")) %>%
-      #   mutate(emshare = emissions/tot_emissions) %>%
-        ## there are sectors that don't have emissions
-      #   replace_na(list(emshare = 0)) -> # replace those shares with "0"
-      #   L141.EPA_hfc_R_S_T_Yh_share
-
-      ## Multiply EPA emissions totals by share of total to each EDGAR sector and gas
-      # L141.EPA_hfc_R_S_T_Yh_share %>%
-      #   left_join(L141.EPA_HFCs_sector_full, by = c("GCAM_region_ID", "supplysector", "EDGAR_agg_sector", "year")) %>%
-      #   mutate(adj_emissions = EPA_emissions * emshare) ->
-      #   L141.EPA_EDGAR_HFCmatch
-
-      ## Clean up data to include base years
-      ## Set constant (MOVE TO CONSTANTS.R ONCE FIXED)
-      # EPA_YEARS <- c(1990, 1995, 2000, 2005, 2010)
-      # L141.EPA_EDGAR_HFCmatch %>% #remove columns used in calculation (once testing is completed, integrate with above pipeline)
-      #   filter(year %in% EPA_YEARS) %>%
-        ## Convert matched values back to gg prior to reading out emissions and calculating EFs
-      #   left_join_error_no_match(EPA_GWPs, by = c("Non.CO2" = "gas")) %>%
-      #   mutate(value = adj_emissions / gwp / CONV_GG_TG) %>%
-      #   select(GCAM_region_ID, supplysector, subsector, stub.technology, Non.CO2, year, adj_emissions) %>%
-      #   replace_na(list(adj_emissions = 0)) ->
-      #   L141.EPA_HFC_R_S_T_Yh_adj
-
       # Overwrite original output file
       L141.hfc_R_S_T_Yh <- L141.EPA_HFC_R_S_T_Yh_adj
 
