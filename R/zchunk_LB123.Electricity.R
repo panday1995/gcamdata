@@ -1,3 +1,5 @@
+# Copyright 2019 Battelle Memorial Institute; see the LICENSE file.
+
 #' module_gcam.usa_LB123.Electricity
 #'
 #' Calculate electricity fuel consumption, electricity generation, and inputs and outputs of net ownuse
@@ -11,7 +13,7 @@
 #' The corresponding file in the original data system was \code{LB123.Electricity.R} (gcam-usa level1).
 #' @details By state, calculates electricity fuel consumption, electricity generation, and inputs and outputs of net ownuse.
 #' @importFrom assertthat assert_that
-#' @importFrom dplyr filter mutate select
+#' @importFrom dplyr bind_rows filter group_by left_join mutate select summarise transmute
 #' @importFrom tidyr gather spread
 #' @author RLH August 2017
 module_gcam.usa_LB123.Electricity <- function(command, ...) {

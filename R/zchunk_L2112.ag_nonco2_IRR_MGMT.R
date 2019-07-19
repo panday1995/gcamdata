@@ -1,3 +1,5 @@
+# Copyright 2019 Battelle Memorial Institute; see the LICENSE file.
+
 #' module_emissions_L2112.ag_nonco2_IRR_MGMT
 #'
 #' Disaggregate non-CO2 agricultral emissions by production technology
@@ -10,7 +12,7 @@
 #' original data system was \code{L2112.ag_nonco2_IRR_MGMT.R} (emissions level2).
 #' @details Disaggregates agricultural emissions the basis of production by scaling emissions by a technology factor
 #' @importFrom assertthat assert_that
-#' @importFrom dplyr filter mutate select
+#' @importFrom dplyr bind_rows filter if_else group_by left_join mutate select summarise
 #' @importFrom tidyr gather spread
 #' @author KD July 2017
 module_emissions_L2112.ag_nonco2_IRR_MGMT <- function(command, ...) {
@@ -72,7 +74,7 @@ module_emissions_L2112.ag_nonco2_IRR_MGMT <- function(command, ...) {
     # technology level in the most recent model base year. This total will latter be
     # used to  calculate share weights.
     L2012.AgProduction_ag_irr_mgmt %>%
-      filter(year == max(BASE_YEARS)) %>%
+      filter(year == max(MODEL_BASE_YEARS)) %>%
       mutate(AgProductionTechnology_nolvl = gsub("_hi|_lo", "", AgProductionTechnology)) %>%
       group_by(region, AgSupplySector, AgSupplySubsector, AgProductionTechnology_nolvl, year) %>%
       summarise(total = sum(calOutputValue)) %>%
@@ -83,7 +85,7 @@ module_emissions_L2112.ag_nonco2_IRR_MGMT <- function(command, ...) {
     # and format the data frame so that so that the AgProductionTechnology_level column
     # will match the column in the aggeregated data frame.
     L2012.AgProduction_ag_irr_mgmt %>%
-      filter(year == max(BASE_YEARS)) %>%
+      filter(year == max(MODEL_BASE_YEARS)) %>%
       select(region, AgSupplySector, AgSupplySubsector, AgProductionTechnology_lvl = AgProductionTechnology, year, calOutputValue) %>%
       mutate(AgProductionTechnology_nolvl = gsub("_hi|_lo", "", AgProductionTechnology_lvl)) ->
       L2112.AgProduction_ag

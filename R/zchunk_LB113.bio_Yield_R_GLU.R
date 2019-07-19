@@ -1,3 +1,5 @@
+# Copyright 2019 Battelle Memorial Institute; see the LICENSE file.
+
 #' module_aglu_LB113.bio_Yield_R_GLU
 #'
 #' Calculate base year bioenergy yields by GCAM region and GLU
@@ -15,14 +17,15 @@
 #' Biomass production in switchgrass across the United States: database description and determinants
 #' of yield. Agronomy Journal 102: 1158-1168. doi:10.2134/agronj2010.0087.
 #' @importFrom assertthat assert_that
-#' @importFrom dplyr filter mutate select
+#' @importFrom dplyr distinct filter group_by inner_join mutate pull select summarise
 #' @importFrom tidyr gather spread
 #' @author BBL June 2017
 module_aglu_LB113.bio_Yield_R_GLU <- function(command, ...) {
   if(command == driver.DECLARE_INPUTS) {
     return(c(FILE = "common/iso_GCAM_regID",
              "L100.LDS_ag_HA_ha",
-             "L100.LDS_ag_prod_t"))
+             "L100.LDS_ag_prod_t",
+             "L101.ag_HA_bm2_R_C_Y_GLU"))
   } else if(command == driver.DECLARE_OUTPUTS) {
     return(c("L113.ag_bioYield_GJm2_R_GLU"))
   } else if(command == driver.MAKE) {
@@ -36,6 +39,7 @@ module_aglu_LB113.bio_Yield_R_GLU <- function(command, ...) {
     iso_GCAM_regID <- get_data(all_data, "common/iso_GCAM_regID")
     L100.LDS_ag_HA_ha <- get_data(all_data, "L100.LDS_ag_HA_ha")
     L100.LDS_ag_prod_t <- get_data(all_data, "L100.LDS_ag_prod_t")
+    L101.ag_HA_bm2_R_C_Y_GLU <- get_data(all_data, "L101.ag_HA_bm2_R_C_Y_GLU")
 
     # Calculate global average yields for each FAO crop in the base year (31-39 old file)
     L100.LDS_ag_HA_ha %>%
@@ -61,6 +65,12 @@ module_aglu_LB113.bio_Yield_R_GLU <- function(command, ...) {
 
     # Match in the global avg yield for each crop, sum up both area and the yield-to-avg-yield ratio
     # by region and GLU, and then compute the area-weighted yield index (52-61)
+
+    # GPK 1/3/2019 modification: the inner_join step below guarantees that bioenergy grass yields are only estimated in
+    # land use regions that have harvested area in FAOSTAT. There are some countries (e.g. San Marino) in Monfreda/LDS
+    # but not FAOSTAT, which can lead to inconsistency in whether bioenergy grass crops are available in a given land
+    # use region.
+
     LDS_ag_Yield_tha %>%
       left_join_error_no_match(select(L113.ag_prod_t_glbl_crop, GTAP_crop, Yield_avg), by = "GTAP_crop") %>%
       mutate(Ratio = Yield / Yield_avg,
@@ -69,6 +79,8 @@ module_aglu_LB113.bio_Yield_R_GLU <- function(command, ...) {
       group_by(GCAM_region_ID, GLU) %>%
       summarise(HA = sum(HA), Ratio_weight = sum(Ratio_weight)) %>%
       ungroup %>%
+      inner_join(distinct(select(L101.ag_HA_bm2_R_C_Y_GLU, GCAM_region_ID, GLU)),
+                 by = c("GCAM_region_ID", "GLU")) %>%
       mutate(YieldIndex = Ratio_weight / HA) ->
       L113.YieldIndex_R_GLU
 
@@ -96,7 +108,8 @@ module_aglu_LB113.bio_Yield_R_GLU <- function(command, ...) {
       add_legacy_name("L113.ag_bioYield_GJm2_R_GLU") %>%
       add_precursors("common/iso_GCAM_regID",
                      "L100.LDS_ag_HA_ha",
-                     "L100.LDS_ag_prod_t") ->
+                     "L100.LDS_ag_prod_t",
+                     "L101.ag_HA_bm2_R_C_Y_GLU") ->
       L113.ag_bioYield_GJm2_R_GLU
 
     return_data(L113.ag_bioYield_GJm2_R_GLU)

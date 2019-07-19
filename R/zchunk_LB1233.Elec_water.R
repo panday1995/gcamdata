@@ -1,3 +1,5 @@
+# Copyright 2019 Battelle Memorial Institute; see the LICENSE file.
+
 #' module_gcam.usa_LB1233.Elec_water
 #'
 #' Compute water withdrawals/consumption by state, fuel, technology, and cooling system type.
@@ -10,7 +12,7 @@
 #' original data system was \code{LB1233.Elec_water.R} (gcam-usa level1).
 #' @details Compute water withdrawals/consumption by state, fuel, technology, and cooling system type.
 #' @importFrom assertthat assert_that
-#' @importFrom dplyr filter mutate select
+#' @importFrom dplyr filter if_else group_by left_join  mutate right_join select summarise
 #' @importFrom tidyr gather spread
 #' @author ST October 2017
 module_gcam.usa_LB1233.Elec_water <- function(command, ...) {
@@ -66,10 +68,12 @@ module_gcam.usa_LB1233.Elec_water <- function(command, ...) {
 
     # aggregate and compute shares for states
     USC_db_adj %>% group_by(state, sector, fuel, technology) %>%
-      summarise(out_MWh_ = sum(out_MWh)) %>% ungroup ->
+      summarise(out_MWh_ = sum(out_MWh)) %>%
+      ungroup() ->
       L1233.out_MWh_state_elec_F_tech
     USC_db_adj %>% group_by(state, sector, fuel, technology, cooling_system, water_type) %>%
-      summarise(out_MWh = sum(out_MWh)) %>% ungroup %>%
+      summarise(out_MWh = sum(out_MWh)) %>%
+      ungroup() %>%
       left_join_error_no_match(L1233.out_MWh_state_elec_F_tech,
                                by = c("state", "sector", "fuel", "technology")) %>%
       mutate(share = out_MWh / out_MWh_) %>% select(-out_MWh_) ->
@@ -82,10 +86,12 @@ module_gcam.usa_LB1233.Elec_water <- function(command, ...) {
       USC_db_adj_2000s
 
     USC_db_adj_2000s %>% group_by(grid_region, sector, fuel, technology) %>%
-      summarise(out_MWh_ = sum(out_MWh)) %>% ungroup ->
+      summarise(out_MWh_ = sum(out_MWh)) %>%
+      ungroup() ->
       L1233.out_MWh_sR_elec_F_tech  # all technologies
     USC_db_adj_2000s %>% group_by(grid_region, sector, fuel, technology, cooling_system, water_type) %>%
-      summarise(out_MWh = sum(out_MWh)) %>% ungroup %>%
+      summarise(out_MWh = sum(out_MWh)) %>%
+      ungroup() %>%
       left_join_error_no_match(L1233.out_MWh_sR_elec_F_tech,
                                by = c("grid_region", "sector", "fuel", "technology")) %>%
       mutate(share = out_MWh / out_MWh_) %>% select(-out_MWh_) ->
@@ -93,10 +99,12 @@ module_gcam.usa_LB1233.Elec_water <- function(command, ...) {
 
     # calculate national averages, to be used as default values where data are missing
     L1233.out_MWh_state_elec_F_tech %>% group_by(sector, fuel, technology) %>%
-      summarise(out_MWh_ = sum(out_MWh_)) %>% ungroup ->
+      summarise(out_MWh_ = sum(out_MWh_)) %>%
+      ungroup() ->
       L1233.out_MWh_USA_elec_F_tech
     L1233.out_MWh_state_elec_F_tech_cool %>% group_by(sector, fuel, technology, cooling_system, water_type) %>%
-      summarise(out_MWh = sum(out_MWh)) %>% ungroup %>%
+      summarise(out_MWh = sum(out_MWh)) %>%
+      ungroup() %>%
       left_join_error_no_match(L1233.out_MWh_USA_elec_F_tech,
                                by = c("sector", "fuel", "technology")) %>%
       mutate(share_nat = out_MWh / out_MWh_) %>% select(-out_MWh_, -out_MWh) ->
@@ -115,7 +123,8 @@ module_gcam.usa_LB1233.Elec_water <- function(command, ...) {
                                by = c("sector", "fuel", "technology", "cooling_system", "water_type")) %>%
       # ^^ brings in national average data
       group_by(state, sector, fuel, technology) %>%
-      mutate(sum_share_tech = sum(share)) %>% ungroup %>%
+      mutate(sum_share_tech = sum(share)) %>%
+      ungroup() %>%
       mutate(share = if_else(sum_share_tech == 0, share_nat, share)) %>%
       select(-share_nat, -sum_share_tech) %>%
       # multiply through by historical output
@@ -136,7 +145,8 @@ module_gcam.usa_LB1233.Elec_water <- function(command, ...) {
                                by = c("sector", "fuel", "technology", "cooling_system", "water_type")) %>%
       # ^^ brings in national average data
       group_by(grid_region, sector, fuel, technology) %>%
-      mutate(sum_share_tech = sum(share)) %>% ungroup %>%
+      mutate(sum_share_tech = sum(share)) %>%
+      ungroup() %>%
       mutate(share = if_else(sum_share_tech == 0, share_nat, share)) %>%
       select(-share_nat, -sum_share_tech, -out_MWh) ->
       L1233.share_sR_elec_F_tech_cool
@@ -153,14 +163,14 @@ module_gcam.usa_LB1233.Elec_water <- function(command, ...) {
       # ^^ conversion to GJ (as opposed to EJ) means result is in km3 (not m3)
       filter(water_type != "none") %>%
       group_by(state, sector, water_type, year) %>% summarise(value = sum(value)) %>%
-      ungroup -> L1233.wdraw_km3_state_elec  # << withdrawal
+      ungroup() -> L1233.wdraw_km3_state_elec  # << withdrawal
 
     L1233.out_wdraw_cons %>%
       mutate(value = value * water_consumption / CONV_MWH_GJ) %>%
       # ^^ conversion to GJ (as opposed to EJ) means result is in km3 (not m3)
       filter(water_type != "none") %>%
       group_by(state, sector, water_type, year) %>% summarise(value = sum(value)) %>%
-      ungroup -> L1233.wcons_km3_state_elec  # << consumption
+      ungroup() -> L1233.wcons_km3_state_elec  # << consumption
 
     # ===================================================
 

@@ -1,3 +1,5 @@
+# Copyright 2019 Battelle Memorial Institute; see the LICENSE file.
+
 #' module_aglu_LB122.LC_R_Cropland_Yh_GLU
 #'
 #' Integrate disparate data sources for land cover and harvested area from FAO, Monfreda, and Hyde in
@@ -23,7 +25,7 @@
 #' Where HA:CL > 3, HA:CL is set to 3, and additional cropland (ExtraCropLand) is written out, to be taken from
 #' other land use types (determined in different code chunks).
 #' @importFrom assertthat assert_that
-#' @importFrom dplyr filter mutate select
+#' @importFrom dplyr anti_join arrange bind_rows distinct filter if_else group_by left_join mutate select summarise summarise_all
 #' @importFrom tidyr gather spread
 #' @author ACS April 2017
 module_aglu_LB122.LC_R_Cropland_Yh_GLU <- function(command, ...) {
@@ -32,8 +34,8 @@ module_aglu_LB122.LC_R_Cropland_Yh_GLU <- function(command, ...) {
              "L100.FAO_fallowland_kha",
              "L100.FAO_CL_kha",
              "L100.FAO_harv_CL_kha",
-             "L103.ag_HA_bm2_R_C_Y_GLU",
-             "L103.ag_Prod_Mt_R_C_Y_GLU",
+             "L101.ag_HA_bm2_R_C_Y_GLU",
+             "L101.ag_Prod_Mt_R_C_Y_GLU",
              "L120.LC_bm2_R_LT_Yh_GLU"))
   } else if(command == driver.DECLARE_OUTPUTS) {
     return(c("L122.ag_HA_to_CropLand_R_Y_GLU",
@@ -56,8 +58,8 @@ module_aglu_LB122.LC_R_Cropland_Yh_GLU <- function(command, ...) {
     L100.FAO_fallowland_kha <- get_data(all_data, "L100.FAO_fallowland_kha")
     L100.FAO_CL_kha <- get_data(all_data, "L100.FAO_CL_kha")
     L100.FAO_harv_CL_kha <- get_data(all_data, "L100.FAO_harv_CL_kha")
-    L103.ag_HA_bm2_R_C_Y_GLU <- get_data(all_data, "L103.ag_HA_bm2_R_C_Y_GLU")
-    L103.ag_Prod_Mt_R_C_Y_GLU <- get_data(all_data, "L103.ag_Prod_Mt_R_C_Y_GLU")
+    L101.ag_HA_bm2_R_C_Y_GLU <- get_data(all_data, "L101.ag_HA_bm2_R_C_Y_GLU")
+    L101.ag_Prod_Mt_R_C_Y_GLU <- get_data(all_data, "L101.ag_Prod_Mt_R_C_Y_GLU")
     L120.LC_bm2_R_LT_Yh_GLU <- get_data(all_data, "L120.LC_bm2_R_LT_Yh_GLU")
 
 
@@ -73,18 +75,18 @@ module_aglu_LB122.LC_R_Cropland_Yh_GLU <- function(command, ...) {
     # L122.LC_bm2_R_CropLand_Y_GLU (from Hyde), and vice versa.
     # Fill out the cropland table to include all R_GLUs in Monfreda:
     L122.LC_bm2_R_CropLand_Y_GLU %>%
-      # find the region-GLU combos in the Monfreda harvested area table L103.ag_HA_bm2_R_C_Y_GLU NOT contained
+      # find the region-GLU combos in the Monfreda harvested area table L101.ag_HA_bm2_R_C_Y_GLU NOT contained
       # in the L122.LC_bm2_R_CropLand_Y_GLU land cover table:
-      anti_join(L103.ag_HA_bm2_R_C_Y_GLU[,c("GCAM_region_ID", "GLU", "year")], .,
+      anti_join(L101.ag_HA_bm2_R_C_Y_GLU[,c("GCAM_region_ID", "GLU", "year")], .,
                 by = c("GCAM_region_ID", "GLU", "year")) %>%
       # save only the unique combinations:
       unique() %>%
       # arrange so rows occur in more sensible order:
       arrange(GCAM_region_ID, GLU, year) %>%
       # add values of 0 everywhere for now:
-      mutate(value = 0) %>%
-      # add a Land_Type identifier:
-      mutate(Land_Type = "Cropland") %>%
+      mutate(value = 0,
+             # add a Land_Type identifier:
+             Land_Type = "Cropland") %>%
       # add these rows to the original Land Cover table:
       bind_rows(L122.LC_bm2_R_CropLand_Y_GLU) ->
       # save as the Land C over table:
@@ -92,9 +94,9 @@ module_aglu_LB122.LC_R_Cropland_Yh_GLU <- function(command, ...) {
 
     # Line 48 in original file
     # old comment: compile harvested area across all crops
-    # Take the input historical harvested area table, L103.ag_HA_bm2_R_C_Y_GLU, and sum over GCAM_commodity, so that each
+    # Take the input historical harvested area table, L101.ag_HA_bm2_R_C_Y_GLU, and sum over GCAM_commodity, so that each
     # region-GLU-year combo has a single value.
-    L103.ag_HA_bm2_R_C_Y_GLU %>%
+    L101.ag_HA_bm2_R_C_Y_GLU %>%
       # remove GCAM_commodity:
       select(-GCAM_commodity) %>%
       group_by(GCAM_region_ID, GLU, year) %>%
@@ -228,11 +230,11 @@ module_aglu_LB122.LC_R_Cropland_Yh_GLU <- function(command, ...) {
       select(-fallow_frac, -uncropped_frac) %>%
       # use the nonharvested_frac and the cropland area information (value) for each Region-GLU-Year to calculate
       # the amouunt of fallowland in that Region-GLU-Year = value * nonharvested_frac
-      mutate(value = value * nonharvested_frac) %>%
+      mutate(value = value * nonharvested_frac,
+             # update the Land_Type identifier to reflect that this is now FallowLand, not Cropland
+             Land_Type = "FallowLand") %>%
       # drop nonharvested_frac since no longer necessary:
-      select(-nonharvested_frac) %>%
-      # update the Land_Type identifier to reflect that this is now FallowLand, not Cropland
-      mutate(Land_Type = "FallowLand") ->
+      select(-nonharvested_frac) ->
       # store in a table of fallowland land cover in bm2 for each region-glu-year
       L122.LC_bm2_R_FallowLand_Y_GLU
 
@@ -272,10 +274,10 @@ module_aglu_LB122.LC_R_Cropland_Yh_GLU <- function(command, ...) {
       select(-value.x, -value.y, -Land_Type) %>%
       # if the harvested to cropland ratio, value, is less than the min acceptable harvested area to cropland,
       # aglu.MIN_HA_TO_CROPLAND, replace with aglu.MIN_HA_TO_CROPLAND
-      mutate(value = if_else(value < aglu.MIN_HA_TO_CROPLAND, aglu.MIN_HA_TO_CROPLAND, value)) %>%
-      # if the harvested to cropland ratio is greater than the max acceptable harvested area to cropland,
-      # aglu.MAX_HA_TO_CROPLAND, replace with aglu.MAX_HA_TO_CROPLAND
-      mutate(value = if_else(value > aglu.MAX_HA_TO_CROPLAND, aglu.MAX_HA_TO_CROPLAND, value)) ->
+      mutate(value = if_else(value < aglu.MIN_HA_TO_CROPLAND, aglu.MIN_HA_TO_CROPLAND, value),
+             # if the harvested to cropland ratio is greater than the max acceptable harvested area to cropland,
+             # aglu.MAX_HA_TO_CROPLAND, replace with aglu.MAX_HA_TO_CROPLAND
+             value = if_else(value > aglu.MAX_HA_TO_CROPLAND, aglu.MAX_HA_TO_CROPLAND, value)) ->
       # store in a table of HA to cropland ratios by region-glu-year
       L122.ag_HA_to_CropLand_R_Y_GLU
 
@@ -283,13 +285,13 @@ module_aglu_LB122.LC_R_Cropland_Yh_GLU <- function(command, ...) {
     # The ag_HA_to_CropLand ratio is assumed to be a property of the region and GLU (not specific to individual crops)
     # Calculate cropland requirements of each crop as harvested area divided by regional ag_HA_to_CropLand ratio
     # Take input harvested area by region-commodity-glu-year:
-    L103.ag_HA_bm2_R_C_Y_GLU %>%
+    L101.ag_HA_bm2_R_C_Y_GLU %>%
       # join the harvested area to cropland ratios, L122.ag_HA_to_CropLand_R_Y_GLU:
       left_join_error_no_match(L122.ag_HA_to_CropLand_R_Y_GLU, by = c("GCAM_region_ID", "GLU", "year")) %>%
-      # value.x = original harvested area info for each GCAM_commodity from L103.ag_HA_bm2_R_C_GLU
+      # value.x = original harvested area info for each GCAM_commodity from L101.ag_HA_bm2_R_C_Y_GLU
       # value.y = HA:CL ratio from L122.ag_HA_to_CropLand_R_Y_GLU just joined
       # calculate the harvested cropland for each commodity as value = value.x/value.y:
-      mutate(value = value.x/value.y) %>%
+      mutate(value = value.x / value.y) %>%
       select(-value.x, -value.y) %>%
       # add a Land_Type identifier:
       mutate(Land_Type = "HarvCropLand") ->
@@ -313,14 +315,14 @@ module_aglu_LB122.LC_R_Cropland_Yh_GLU <- function(command, ...) {
 
     # Lines 130-136 in original file
     # Calculate economic yield by each crop as production divided by cropland. Write out this preliminary table.
-    # Production by region-glu-commodity-year comes from input data L103.ag_Prod_Mt_R_C_Y_GLU.
+    # Production by region-glu-commodity-year comes from input data L101.ag_Prod_Mt_R_C_Y_GLU.
     # Cropland area by region-glu-commodity-year was calculated as table L122.LC_bm2_R_HarvCropLand_C_Y_GLU
     # Take cropland by region-glu-commodity-year:
     L122.LC_bm2_R_HarvCropLand_C_Y_GLU %>%
       # join the production by region-glu-commodity-year information:
-      left_join_error_no_match(L103.ag_Prod_Mt_R_C_Y_GLU, by = c("GCAM_region_ID", "GCAM_commodity", "GLU", "year")) %>%
+      left_join_error_no_match(L101.ag_Prod_Mt_R_C_Y_GLU, by = c("GCAM_region_ID", "GCAM_commodity", "GLU", "year")) %>%
       # value.x = the cropland area by region-commodity-glu-year from L122.LC_bm2_R_HarvCropLand_C_Y_GLU
-      # value.y = production by region-commodity-glu-year from L103.ag_Prod_Mt_R_C_Y_GLU
+      # value.y = production by region-commodity-glu-year from L101.ag_Prod_Mt_R_C_Y_GLU
       # Calculate yield by region-commodity-glu-year as value = value.y/value.x:
       mutate(value = value.y / value.x) %>%
       select(-value.x, -value.y, -Land_Type) %>%
@@ -364,10 +366,10 @@ module_aglu_LB122.LC_R_Cropland_Yh_GLU <- function(command, ...) {
       ungroup() %>% mutate(Land_Type = "UnusedCropLand") %>%
       # positive residuals cannot be remapped to OtherArableLand. Therefore, they do not count as UnusedCropLand
       # and region-glu-years with positive residual have 0 UnusedCropLand:
-      mutate(value = if_else(value > 0, 0, value)) %>%
-      # negative residuals ARE UnusedCropLand. -1 * the negative residual is the amount of UnusuedCropLand that
-      # can be mapped to OtherArable Land. Calculate UnusedCropLand:
-      mutate(value = -1 * value) ->
+      mutate(value = if_else(value > 0, 0, value),
+             # negative residuals ARE UnusedCropLand. -1 * the negative residual is the amount of UnusuedCropLand that
+             # can be mapped to OtherArable Land. Calculate UnusedCropLand:
+             value = -1 * value) ->
       # store in a table of UnusedCropLand by region-glu-year
       L122.LC_bm2_R_UnusedCropLand_Y_GLU
 
@@ -530,7 +532,7 @@ module_aglu_LB122.LC_R_Cropland_Yh_GLU <- function(command, ...) {
                      "L100.FAO_fallowland_kha",
                      "L100.FAO_CL_kha",
                      "L100.FAO_harv_CL_kha",
-                     "L103.ag_HA_bm2_R_C_Y_GLU",
+                     "L101.ag_HA_bm2_R_C_Y_GLU",
                      "L120.LC_bm2_R_LT_Yh_GLU") ->
       L122.ag_HA_to_CropLand_R_Y_GLU
 
@@ -544,8 +546,8 @@ module_aglu_LB122.LC_R_Cropland_Yh_GLU <- function(command, ...) {
                      "L100.FAO_fallowland_kha",
                      "L100.FAO_CL_kha",
                      "L100.FAO_harv_CL_kha",
-                     "L103.ag_HA_bm2_R_C_Y_GLU",
-                     "L103.ag_Prod_Mt_R_C_Y_GLU",
+                     "L101.ag_HA_bm2_R_C_Y_GLU",
+                     "L101.ag_Prod_Mt_R_C_Y_GLU",
                      "L120.LC_bm2_R_LT_Yh_GLU") ->
       L122.ag_EcYield_kgm2_R_C_Y_GLU
 
@@ -559,7 +561,7 @@ module_aglu_LB122.LC_R_Cropland_Yh_GLU <- function(command, ...) {
                      "L100.FAO_fallowland_kha",
                      "L100.FAO_CL_kha",
                      "L100.FAO_harv_CL_kha",
-                     "L103.ag_HA_bm2_R_C_Y_GLU",
+                     "L101.ag_HA_bm2_R_C_Y_GLU",
                      "L120.LC_bm2_R_LT_Yh_GLU") ->
       L122.LC_bm2_R_OtherArableLand_Yh_GLU
 
@@ -573,9 +575,8 @@ module_aglu_LB122.LC_R_Cropland_Yh_GLU <- function(command, ...) {
                      "L100.FAO_fallowland_kha",
                      "L100.FAO_CL_kha",
                      "L100.FAO_harv_CL_kha",
-                     "L103.ag_HA_bm2_R_C_Y_GLU",
-                     "L120.LC_bm2_R_LT_Yh_GLU") %>%
-      add_flags(FLAG_PROTECT_FLOAT) ->
+                     "L101.ag_HA_bm2_R_C_Y_GLU",
+                     "L120.LC_bm2_R_LT_Yh_GLU") ->
       L122.LC_bm2_R_ExtraCropLand_Yh_GLU
 
     L122.LC_bm2_R_HarvCropLand_C_Yh_GLU %>%
@@ -589,9 +590,8 @@ module_aglu_LB122.LC_R_Cropland_Yh_GLU <- function(command, ...) {
                      "L100.FAO_fallowland_kha",
                      "L100.FAO_CL_kha",
                      "L100.FAO_harv_CL_kha",
-                     "L103.ag_HA_bm2_R_C_Y_GLU",
-                     "L120.LC_bm2_R_LT_Yh_GLU") %>%
-      add_flags(FLAG_PROTECT_FLOAT) ->
+                     "L101.ag_HA_bm2_R_C_Y_GLU",
+                     "L120.LC_bm2_R_LT_Yh_GLU") ->
       L122.LC_bm2_R_HarvCropLand_C_Yh_GLU
 
     L122.LC_bm2_R_HarvCropLand_Yh_GLU %>%
@@ -605,7 +605,7 @@ module_aglu_LB122.LC_R_Cropland_Yh_GLU <- function(command, ...) {
                      "L100.FAO_fallowland_kha",
                      "L100.FAO_CL_kha",
                      "L100.FAO_harv_CL_kha",
-                     "L103.ag_HA_bm2_R_C_Y_GLU",
+                     "L101.ag_HA_bm2_R_C_Y_GLU",
                      "L120.LC_bm2_R_LT_Yh_GLU") ->
       L122.LC_bm2_R_HarvCropLand_Yh_GLU
 

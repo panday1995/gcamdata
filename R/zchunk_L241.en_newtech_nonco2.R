@@ -1,3 +1,5 @@
+# Copyright 2019 Battelle Memorial Institute; see the LICENSE file.
+
 #' module_emissions_L241.en_newtech_nonco2
 #'
 #' Produce emission coefficient tables for model input tables related to new energy technology.
@@ -10,7 +12,7 @@
 #' original data system was \code{L241.en_newtech_nonco2.R} (emissions level2).
 #' @details Generate input tables of non-CO2 emission coefficients.
 #' @importFrom assertthat assert_that
-#' @importFrom dplyr filter mutate select
+#' @importFrom dplyr bind_rows filter left_join mutate right_join select
 #' @importFrom tidyr gather spread
 #' @author KD August 2017
 module_emissions_L241.en_newtech_nonco2 <- function(command, ...) {
@@ -93,7 +95,7 @@ module_emissions_L241.en_newtech_nonco2 <- function(command, ...) {
     L241.nonco2_tech_coeff %>%
       filter(!is.na(emiss.coeff)) %>%
       bind_rows(L241.co_tech_coeff_except, L241.ch4_tech_coeff_except) %>%
-      mutate(year = min(FUTURE_YEARS)) %>%
+      mutate(year = min(MODEL_FUTURE_YEARS)) %>%
       select(region, supplysector, subsector, stub.technology, year, Non.CO2, emiss.coeff) ->
       L241.nonco2_tech_coeff
 
@@ -109,7 +111,7 @@ module_emissions_L241.en_newtech_nonco2 <- function(command, ...) {
     # data frame.
     L241.nonco2_tech_coeff %>%
       select(region, supplysector, subsector, stub.technology, Non.CO2) %>%
-      mutate(year = min(FUTURE_YEARS),
+      mutate(year = min(MODEL_FUTURE_YEARS),
              ctrl.name = "GDP_control") ->
       L241.nonco2_max_reduction
 
@@ -133,7 +135,7 @@ module_emissions_L241.en_newtech_nonco2 <- function(command, ...) {
     # Select closest future max reduction emission coefficients.
     L241.nonco2_max_reduction %>%
       select(region, supplysector, subsector, stub.technology, Non.CO2, year) %>%
-      filter(year == min(FUTURE_YEARS)) %>%
+      filter(year == min(MODEL_FUTURE_YEARS)) %>%
       mutate(ctrl.name = "GDP_control") ->
       L241.nonco2_steepness
 
@@ -176,7 +178,7 @@ module_emissions_L241.en_newtech_nonco2 <- function(command, ...) {
     # used in historical years in the first model base year.
     L241.nonco2_tech_coeff %>%
       unite(sector_tech_id, supplysector, subsector, stub.technology, remove = FALSE) %>%
-      mutate(year = replace(year, sector_tech_id %in% L241.maybe_historic$sector_tech_id, min(BASE_YEARS))) %>%
+      mutate(year = replace(year, sector_tech_id %in% L241.maybe_historic$sector_tech_id, min(MODEL_BASE_YEARS))) %>%
       select(-sector_tech_id) ->
       L241.nonco2_tech_coeff
 
@@ -184,7 +186,7 @@ module_emissions_L241.en_newtech_nonco2 <- function(command, ...) {
     # used in historical years in the first model base year.
     L241.nonco2_max_reduction %>%
       unite(sector_tech_id, supplysector, subsector, stub.technology, remove = FALSE) %>%
-      mutate(year = replace(year, sector_tech_id %in% L241.maybe_historic$sector_tech_id, min(BASE_YEARS))) %>%
+      mutate(year = replace(year, sector_tech_id %in% L241.maybe_historic$sector_tech_id, min(MODEL_BASE_YEARS))) %>%
       select(-sector_tech_id) ->
       L241.nonco2_max_reduction
 
@@ -192,7 +194,7 @@ module_emissions_L241.en_newtech_nonco2 <- function(command, ...) {
     # used in historical years in the first model base year.
     L241.nonco2_steepness %>%
       unite(sector_tech_id, supplysector, subsector, stub.technology, remove = FALSE) %>%
-      mutate(year = replace(year, sector_tech_id %in% L241.maybe_historic$sector_tech_id, min(BASE_YEARS))) %>%
+      mutate(year = replace(year, sector_tech_id %in% L241.maybe_historic$sector_tech_id, min(MODEL_BASE_YEARS))) %>%
       select(-sector_tech_id) ->
       L241.nonco2_steepness
 

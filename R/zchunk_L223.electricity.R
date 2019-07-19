@@ -1,3 +1,5 @@
+# Copyright 2019 Battelle Memorial Institute; see the LICENSE file.
+
 #' module_energy_L223.electricity
 #'
 #' Prepares assumptions and calibrated inputs and outputs for the electricity sector.
@@ -33,7 +35,7 @@
 #' Solar and wind capacity factor assumptions are scaled using data on irradiance and available wind resource. It also determines future fixed outputs of hydropower.
 #' This also prepares alternate low- and high-tech capital costs, which are then saved to their own xmls and can be used to overwrite default capital costs.
 #' @importFrom assertthat assert_that
-#' @importFrom dplyr filter mutate select
+#' @importFrom dplyr anti_join arrange bind_rows filter if_else group_by left_join mutate select semi_join summarise
 #' @importFrom tidyr gather spread
 #' @author CWR October 2017/BBL July 2017
 module_energy_L223.electricity <- function(command, ...) {
@@ -237,7 +239,7 @@ module_energy_L223.electricity <- function(command, ...) {
       summarise(value = weighted.mean(value, weight)) %>%
 
       # Interpolate to model time periods, and add columns specifying the final format
-      complete(GCAM_region_ID, year = FUTURE_YEARS[FUTURE_YEARS >= min(year) & FUTURE_YEARS <= max(year)]) %>%
+      complete(GCAM_region_ID, year = MODEL_FUTURE_YEARS[MODEL_FUTURE_YEARS >= min(year) & MODEL_FUTURE_YEARS <= max(year)]) %>%
       arrange(GCAM_region_ID, year) %>%
       mutate(share.weight = approx_fun(year, value, rule = 1)) %>%
       # applies consistent supplysector and subsector names (electricity, nuclear)
@@ -339,7 +341,7 @@ module_energy_L223.electricity <- function(command, ...) {
     # Capacity factor of global technologies
     A23.globaltech_capacity_factor %>%
       gather_years(value_col = "capacity.factor") %>%
-      complete(nesting(supplysector, subsector, technology), year = c(year, BASE_YEARS, FUTURE_YEARS)) %>%
+      complete(nesting(supplysector, subsector, technology), year = c(year, MODEL_BASE_YEARS, MODEL_FUTURE_YEARS)) %>%
       arrange(supplysector, year) %>%
       group_by(supplysector, subsector, technology) %>%
       mutate(capacity.factor = approx_fun(year, capacity.factor, rule = 1)) %>%
@@ -529,7 +531,7 @@ module_energy_L223.electricity <- function(command, ...) {
     # Interpolate shareweight assumptions to all base and future years.
     A23.globaltech_shrwt %>%
       gather_years(value_col = "share.weight") %>%
-      complete(nesting(supplysector, subsector, technology), year = c(year, BASE_YEARS, FUTURE_YEARS)) %>%
+      complete(nesting(supplysector, subsector, technology), year = c(year, MODEL_BASE_YEARS, MODEL_FUTURE_YEARS)) %>%
       arrange(supplysector, year) %>%
       group_by(supplysector, subsector, technology) %>%
       mutate(share.weight = approx_fun(year, share.weight, rule = 1)) %>%
@@ -601,12 +603,12 @@ module_energy_L223.electricity <- function(command, ...) {
     # Interpolate fractions of CO2 captured to all future years
     A23.globaltech_co2capture %>%
       gather_years(value_col = "remove.fraction") %>%
-      complete(nesting(supplysector, subsector, technology), year = c(year, BASE_YEARS, FUTURE_YEARS)) %>%
+      complete(nesting(supplysector, subsector, technology), year = c(year, MODEL_BASE_YEARS, MODEL_FUTURE_YEARS)) %>%
       arrange(supplysector, year) %>%
       group_by(supplysector, subsector, technology) %>%
       mutate(remove.fraction = approx_fun(year, remove.fraction, rule = 1)) %>%
       ungroup() %>%
-      filter(year %in% FUTURE_YEARS) %>%
+      filter(year %in% MODEL_FUTURE_YEARS) %>%
       rename(sector.name = supplysector, subsector.name = subsector) %>%
       # Rounds the fraction to two digits and adds the name of the carbon storage market
       mutate(remove.fraction = round(remove.fraction, energy.DIGITS_REMOVE.FRACTION), storage.market = energy.CO2.STORAGE.MARKET) ->
@@ -642,10 +644,10 @@ module_energy_L223.electricity <- function(command, ...) {
 
     # Copies base year retirement information into all future years and appends back onto itself
     L223.globaltech_retirement_base %>%
-      filter(year == min(FUTURE_YEARS)) %>%
+      filter(year == min(MODEL_FUTURE_YEARS)) %>%
       select(-year) %>%
-      repeat_add_columns(tibble(year = FUTURE_YEARS)) %>%
-      bind_rows(filter(L223.globaltech_retirement_base, year == max(BASE_YEARS))) ->
+      repeat_add_columns(tibble(year = MODEL_FUTURE_YEARS)) %>%
+      bind_rows(filter(L223.globaltech_retirement_base, year == max(MODEL_BASE_YEARS))) ->
       L223.globaltech_retirement
 
     # PHASED RETIREMENT
@@ -756,12 +758,12 @@ module_energy_L223.electricity <- function(command, ...) {
 
     # generate base year calibrated inputs of electricity by interpolating from historical values
     L1231.in_EJ_R_elec_F_tech_Yh %>%
-      complete(nesting(GCAM_region_ID, sector, fuel, technology), year = c(year, BASE_YEARS)) %>%
+      complete(nesting(GCAM_region_ID, sector, fuel, technology), year = c(year, MODEL_BASE_YEARS)) %>%
       arrange(GCAM_region_ID, year) %>%
       group_by(GCAM_region_ID, sector, fuel, technology) %>%
       mutate(value = approx_fun(year, value, rule = 1)) %>%
       ungroup() %>%
-      filter(year %in% BASE_YEARS) %>%
+      filter(year %in% MODEL_BASE_YEARS) %>%
       # append region names
       left_join_error_no_match(GCAM_region_names, by = "GCAM_region_ID") ->
       L223.in_EJ_R_elec_F_tech_Yh_base
@@ -795,7 +797,7 @@ module_energy_L223.electricity <- function(command, ...) {
     # ------------------------------------------------------------------------------------------------------------------
 
     # NOTE: Fixed output is assumed to apply in all historical years, regardless of final calibration year.
-    # NOTE: BASE_YEARS /= (MODEL_YEARS %in% HISTORICAL YEARS) only if historical years are offset from base years.
+    # NOTE: MODEL_BASE_YEARS /= (MODEL_YEARS %in% HISTORICAL YEARS) only if historical years are offset from base years.
     # Interpolate calibrated outputs to historical years from L1231 values
     L1231.out_EJ_R_elec_F_tech_Yh %>%
       complete(nesting(GCAM_region_ID, sector, fuel, technology), year = c(year, MODEL_YEARS[MODEL_YEARS %in% HISTORICAL_YEARS])) %>%
@@ -828,7 +830,7 @@ module_energy_L223.electricity <- function(command, ...) {
 
     # filters for all other calibrated techs. By default, this is nuclear, wind, solar, geothermal.
     L223.out_EJ_R_elec_F_tech_Yh %>%
-      filter(calibration == "output" & year %in% BASE_YEARS) %>%
+      filter(calibration == "output" & year %in% MODEL_BASE_YEARS) %>%
       select(-calibration) %>%
     # Cleaning up and setting shareweights for L223.StubTechProd_elec: calibrated output of electricity generation technologies
       mutate(calOutputValue = round(value, energy.DIGITS_CALOUTPUT), share.weight.year = year, share.weight = if_else(calOutputValue > 0, 1, 0)) %>%
@@ -841,12 +843,12 @@ module_energy_L223.electricity <- function(command, ...) {
 
     # Interpolate values for fixed output of future hydropower
     L118.out_EJ_R_elec_hydro_Yfut %>%
-      complete(nesting(GCAM_region_ID, sector, fuel), year = c(year, FUTURE_YEARS)) %>%
+      complete(nesting(GCAM_region_ID, sector, fuel), year = c(year, MODEL_FUTURE_YEARS)) %>%
       arrange(GCAM_region_ID, year) %>%
       group_by(GCAM_region_ID, sector, fuel) %>%
       mutate(value = approx_fun(year, value, rule = 1)) %>%
       ungroup() %>%
-      filter(year %in% FUTURE_YEARS[!FUTURE_YEARS %in% HISTORICAL_YEARS]) %>%
+      filter(year %in% MODEL_FUTURE_YEARS[!MODEL_FUTURE_YEARS %in% HISTORICAL_YEARS]) %>%
       # append region names
       left_join_error_no_match(GCAM_region_names, by = "GCAM_region_ID") ->
       L223.StubTechFixOut_hydro
@@ -866,7 +868,7 @@ module_energy_L223.electricity <- function(command, ...) {
     # --------------------------------------------------------------------------------------------------
 
     # NOTE: Electric sector efficiencies are assumed to apply for all historical years, regardless of final calibration year
-    # Interpolate values to model years within historical years (by default, this equals BASE_YEARS)
+    # Interpolate values to model years within historical years (by default, this equals MODEL_BASE_YEARS)
     L1231.eff_R_elec_F_tech_Yh %>%
       complete(nesting(GCAM_region_ID, sector, fuel, technology), year = c(year, MODEL_YEARS[MODEL_YEARS %in% HISTORICAL_YEARS])) %>%
       arrange(GCAM_region_ID, year) %>%

@@ -3,6 +3,8 @@
 # Units: NA
 # Comments: Basin assigned to the country which has the largest basin area.
 # Source: NA
+# Column types: iccccic 
+# ----------
 GCAM_basin_ID,Basin_name,GLU_code,GLU_name,ISO,ISO_NUM,Country_name
 1,Arctic_Ocean_Islands,GLU001,ArcticIsl,GRL,304,Greenland
 2,Northwest_Territories,GLU002,NWTerr,CAN,124,Canada
@@ -180,7 +182,7 @@ GCAM_basin_ID,Basin_name,GLU_code,GLU_name,ISO,ISO_NUM,Country_name
 174,Tocantins,GLU174,TocantinsR,BRA,76,Brazil
 175,Java_Timor,GLU175,JavaTimor,IDN,360,Indonesia
 176,Solomon_Islands,GLU176,SolomonIsl,SLB,90,Solomon Islands
-177,Madasgacar,GLU177,Madasgacar,MDG,450,Madagascar
+177,Madagascar,GLU177,Madagascar,MDG,450,Madagascar
 178,Sepik,GLU178,SepikR,PNG,598,Papua New Guinea
 179,Rift_Valley,GLU179,RiftValley,ETH,231,Ethiopia
 180,Peru_Pacific_Coast,GLU180,PeruCst,PER,604,Peru

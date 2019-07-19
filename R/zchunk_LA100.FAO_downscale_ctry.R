@@ -1,3 +1,5 @@
+# Copyright 2019 Battelle Memorial Institute; see the LICENSE file.
+
 #' module_aglu_LA100.FAO_downscale_ctry
 #'
 #' Downscale FAO production and consumption agricultural data to AGLU countries.
@@ -14,8 +16,8 @@
 #' @importFrom assertthat assert_that
 #' @importFrom tibble tibble
 #' @importFrom stats aggregate
-#' @import dplyr
-#' @importFrom tidyr gather spread
+#' @importFrom dplyr bind_rows distinct filter full_join left_join rename select
+#' @importFrom tidyr gather replace_na spread
 #' @author BBL
 module_aglu_LA100.FAO_downscale_ctry <- function(command, ...) {
   if(command == driver.DECLARE_INPUTS) {
@@ -348,13 +350,11 @@ module_aglu_LA100.FAO_downscale_ctry <- function(command, ...) {
     L100.FAOlist[["L100.FAO_fallowland_kha"]] %>%
       add_title("FAO fallow land area by country, year") %>%
       add_units("kha") %>%
-      add_flags(FLAG_PROTECT_FLOAT) %>%
       add_precursors("aglu/FAO/FAO_fallowland_kha_RESOURCESTAT", "aglu/AGLU_ctry") ->
       L100.FAO_fallowland_kha
     L100.FAOlist[["L100.FAO_harv_CL_kha"]] %>%
       add_title("FAO harvested cropland (temporary crops) area by country, year") %>%
       add_units("kha") %>%
-      add_flags(FLAG_PROTECT_FLOAT) %>%
       add_precursors("aglu/FAO/FAO_harv_CL_kha_RESOURCESTAT", "aglu/AGLU_ctry") ->
       L100.FAO_harv_CL_kha
     L100.FAOlist[["L100.FAO_Fert_Cons_tN"]] %>%

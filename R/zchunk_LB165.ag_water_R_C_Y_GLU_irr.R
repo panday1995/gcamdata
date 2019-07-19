@@ -1,3 +1,5 @@
+# Copyright 2019 Battelle Memorial Institute; see the LICENSE file.
+
 #' module_aglu_LB165.ag_water_R_C_Y_GLU_irr
 #'
 #' Compute irrigation efficiency (by GCAM region) and blue, green, and total consumption coefficients (by region, commodity, and GLU).
@@ -16,7 +18,7 @@
 #' in the inventory data. For rainfed crops, total biophysical = green, and for irrigated crops,
 #' total biophysical = blue + green.
 #' @importFrom assertthat assert_that
-#' @importFrom dplyr filter mutate select
+#' @importFrom dplyr bind_rows filter if_else group_by left_join mutate right_join select summarise summarise_at vars
 #' @importFrom tidyr gather spread
 #' @author BBL April 2017
 module_aglu_LB165.ag_water_R_C_Y_GLU_irr <- function(command, ...) {
@@ -39,14 +41,14 @@ module_aglu_LB165.ag_water_R_C_Y_GLU_irr <- function(command, ...) {
 
     ## Silence package check.
     GTAP_crop <- MH_crop <- iso <- coef_m3t <- FAO_crop <- water_type <-
-        coef_m3kg <- value <- Prod_t <- Blue <- Green <- item <- value_other <-
-        blue_m3kg <- green_m3kg <- irrProd <- blue_thousm3 <- irrProd_t <-
-        BlueIrr_m3kg <- total_m3kg <- GreenIrr_m3kg <- green_thousm3 <-
-        GreenIrr_thousm3 <- rfdProd <- rfdProd_t <- GreenRfd_thousm3 <-
-        MH2014_proxy <- GLU <- NULL
+      coef_m3kg <- value <- Prod_t <- Blue <- Green <- item <- value_other <-
+      blue_m3kg <- green_m3kg <- irrProd <- blue_thousm3 <- irrProd_t <-
+      BlueIrr_m3kg <- total_m3kg <- GreenIrr_m3kg <- green_thousm3 <-
+      GreenIrr_thousm3 <- rfdProd <- rfdProd_t <- GreenRfd_thousm3 <-
+      MH2014_proxy <- GLU <- NULL
     GreenRfd_m3kg <- GCAM_region_ID <- GCAM_commodity <- BlueIrr_thousm3 <-
-        TotIrr_m3kg <- application.eff <- management.eff <- irrHA <-
-        field.eff <- conveyance.eff <- NULL
+      TotIrr_m3kg <- application.eff <- management.eff <- irrHA <-
+      field.eff <- conveyance.eff <- NULL
 
     all_data <- list(...)[[1]]
 
@@ -186,9 +188,9 @@ module_aglu_LB165.ag_water_R_C_Y_GLU_irr <- function(command, ...) {
     L165.ag_Water_ctry_MHcrop_GLU %>%
       left_join_error_no_match(L151.ag_irrProd_t_ctry_crop, by = c("iso", "GTAP_crop", "GLU")) %>%
       rename(irrProd_t = irrProd) %>%
-      mutate(BlueIrr_m3kg = blue_thousm3 / irrProd_t) %>%
-      # Set the coefs to zero wherever irrigated production is zero (these couldn't have any water consumption in GCAM anyway)
-      mutate(BlueIrr_m3kg = if_else(irrProd_t == 0, 0, BlueIrr_m3kg),
+      mutate(BlueIrr_m3kg = blue_thousm3 / irrProd_t,
+             # Set the coefs to zero wherever irrigated production is zero (these couldn't have any water consumption in GCAM anyway)
+             BlueIrr_m3kg = if_else(irrProd_t == 0, 0, BlueIrr_m3kg),
              # Cap blue water coefficients at the total biophysical quantity
              BlueIrr_m3kg = pmin(BlueIrr_m3kg, total_m3kg),
              #	(3) Calculate the green water coef for irrigated crops

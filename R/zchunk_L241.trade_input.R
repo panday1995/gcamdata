@@ -1,3 +1,5 @@
+# Copyright 2019 Battelle Memorial Institute; see the LICENSE file.
+
 #' module_aglu_L241.trade_input
 #'
 #' Build datasets for ssp4 agricultural trade.
@@ -11,7 +13,7 @@
 #' @details Build datasets for ssp4 agricultural trade: food and nonfood trade coefficients, feed trade
 #' coefficients, restricted agricultural trade, and trade regions.
 #' @importFrom assertthat assert_that
-#' @importFrom dplyr filter mutate select
+#' @importFrom dplyr filter if_else left_join mutate select
 #' @importFrom tidyr gather spread
 #' @author BBL June 2017
 module_aglu_L241.trade_input <- function(command, ...) {
@@ -120,7 +122,7 @@ module_aglu_L241.trade_input <- function(command, ...) {
 
     # Output coefficient for RES ag_trade of food crops (incl secondary products) (85-90)
     L2012.AgProduction_ag_irr_mgmt %>%
-      filter(year == max(BASE_YEARS)) %>%
+      filter(year == max(MODEL_BASE_YEARS)) %>%
       select(-year) %>%
       repeat_add_columns(tibble(year = aglu_demand_futureyears)) %>%
       mutate(res.secondary.output = "ag_trade",

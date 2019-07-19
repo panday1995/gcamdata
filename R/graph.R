@@ -1,3 +1,5 @@
+# Copyright 2019 Battelle Memorial Institute; see the LICENSE file.
+
 
 #' graph_chunks
 #'
@@ -6,6 +8,7 @@
 #' @param include_disabled Plots nodes of disabled chunks?
 #' @param quiet Suppress messages?
 #' @return Adjacency matrix showing chunk-to-chunk data flows
+#' @importFrom dplyr bind_rows distinct filter group_by inner_join left_join mutate right_join select summarise ungroup
 #' @importFrom grDevices rainbow
 #' @importFrom graphics plot title
 #' @export
@@ -14,8 +17,8 @@ graph_chunks <- function(module_filter = NULL,
                          include_disabled = FALSE,
                          quiet = TRUE) {
 
-  output <- to_xml <- module <- name.y <- name <- disabled <- input <- num <-
-    NULL                              # silence notes on package check.
+  palette <- output <- to_xml <- module <- name.y <- name <- disabled <-
+    input <- num <- NULL   # silence notes on package check.
 
   assert_that(is.null(module_filter) | is.character(module_filter))
   assert_that(is.logical(plot_gcam))
@@ -94,7 +97,7 @@ graph_chunks <- function(module_filter = NULL,
   # Compute number of outputs
   chunkoutputs %>%
     group_by(name) %>%
-    summarise(noutputs = n()) %>%
+    summarise(noutputs = dplyr::n()) %>%
     right_join(chunklist, by = "name") ->
     chunklist
 

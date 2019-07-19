@@ -1,3 +1,5 @@
+# Copyright 2019 Battelle Memorial Institute; see the LICENSE file.
+
 #' module_aglu_LB134.Diet_Rfao
 #'
 #' Build historical and future time series of per-capita caloric demands.
@@ -16,7 +18,7 @@
 #' extend the projected diets to all years, assuming convergence year and demand levels;
 #' make SSP-specific projections based on GDP changes.
 #' @importFrom assertthat assert_that
-#' @importFrom dplyr filter mutate select
+#' @importFrom dplyr arrange bind_rows filter if_else group_by left_join mutate right_join select summarise
 #' @importFrom tidyr gather spread
 #' @author BBL May 2017
 module_aglu_LB134.Diet_Rfao <- function(command, ...) {
@@ -88,8 +90,8 @@ module_aglu_LB134.Diet_Rfao <- function(command, ...) {
       left_join(L101.Pop_thous_R_Yh, by = c("GCAM_region_ID", "year")) %>%
       # make sure we have population data for all years
       group_by(GCAM_region_ID) %>%
-      mutate(value = approx_fun(year, value)) %>%
-      mutate(food_demand_percapita = consumption * CONV_DAYS_YEAR * (1 / CONV_MCAL_PCAL) / value) %>%
+      mutate(value = approx_fun(year, value),
+             food_demand_percapita = consumption * CONV_DAYS_YEAR * (1 / CONV_MCAL_PCAL) / value) %>%
       select(-consumption, -value) ->
       L134.pcFood_kcald_R_Dmnd_Y
 
@@ -202,8 +204,8 @@ module_aglu_LB134.Diet_Rfao <- function(command, ...) {
     # Extend the projected diets to all years, assuming convergence year and demand levels
     # Original lines 133-138
     DIET_CONVERGENCE_YEAR <- 9999
-    CONVERENCE_KCALD_CROPS <- 2500
-    CONVERENCE_KCALD_MEAT <- 1000
+    CONVERGENCE_KCALD_CROPS <- 2500
+    CONVERGENCE_KCALD_MEAT <- 1000
 
     L134.pcFood_kcald_R_Dmnd_Y %>%
       rename(demand_kcal = food_demand_percapita) %>%
@@ -211,7 +213,7 @@ module_aglu_LB134.Diet_Rfao <- function(command, ...) {
                year = unique(c(year, HISTORICAL_YEARS, FUTURE_YEARS, DIET_CONVERGENCE_YEAR))) %>%
       # fill in convergence year (9999) value
       mutate(demand_kcal = if_else(year == DIET_CONVERGENCE_YEAR,
-                                   if_else(GCAM_demand == "crops", CONVERENCE_KCALD_CROPS, CONVERENCE_KCALD_MEAT),
+                                   if_else(GCAM_demand == "crops", CONVERGENCE_KCALD_CROPS, CONVERGENCE_KCALD_MEAT),
                                    demand_kcal)) %>%
       # interpolate out to that convergence year
       group_by(GCAM_region_ID, GCAM_demand) %>%
@@ -240,24 +242,28 @@ module_aglu_LB134.Diet_Rfao <- function(command, ...) {
         mutate(GCAM_demand = demand,
                value = a / (1 + exp(b * log(value)))) %>%
         select(GCAM_region_ID, GCAM_demand, year, value) %>%
-        filter(year %in% c(max(HISTORICAL_YEARS), FUTURE_YEARS)) ->
+        # this is tricky - this formula was developed for ratios computed at 5-year intervals
+        filter(year %in% aglu.SSP_DEMAND_YEARS) ->
         raw_demand
 
       # Compute food demand ratios for future years
       raw_demand %>%
-        arrange(GCAM_region_ID, GCAM_demand, desc(year)) %>%
+        arrange(GCAM_region_ID, GCAM_demand, dplyr::desc(year)) %>%
         group_by(GCAM_region_ID, GCAM_demand) %>%
-        mutate(ratio = value / lead(value)) %>%
+        mutate(ratio = value / dplyr::lead(value)) %>%
         select(-value) %>%
         # ...and use those ratios to scale future food demand
-        left_join(filter(L134.pcFood_kcald_R_Dmnd_Y, GCAM_demand == demand), ., by = c("GCAM_region_ID", "GCAM_demand", "year")) %>%
+        # the joined table includes all historical years, and 5-year intervals in the future years
+        left_join(filter(L134.pcFood_kcald_R_Dmnd_Y,
+                         GCAM_demand == demand & year %in% c(HISTORICAL_YEARS, aglu.SSP_DEMAND_YEARS)), .,
+                  by = c("GCAM_region_ID", "GCAM_demand", "year")) %>%
         replace_na(list(ratio = 1.0)) %>%
         arrange(GCAM_region_ID, GCAM_demand, year) %>%
         group_by(GCAM_region_ID, GCAM_demand) %>%
         # computing the cumulative product, and then multiplying by the last historical year value, is the
         # same mathematically as multiplying each year's ratio by the previous year's value
         mutate(ratio = cumprod(ratio),
-               demand_kcal = if_else(year > max(HISTORICAL_YEARS), ratio * nth(demand_kcal, which(year == max(HISTORICAL_YEARS))), demand_kcal)) %>%
+               demand_kcal = if_else(year > max(HISTORICAL_YEARS), ratio * dplyr::nth(demand_kcal, which(year == max(HISTORICAL_YEARS))), demand_kcal)) %>%
         # Next step will be to ensure the year-to-year change, and absolute values, don't exceed certain levels
         # These levels are given in 'A_FoodDemand_SSPs', so merge that in
         mutate(scenario = scen) %>%
@@ -270,7 +276,7 @@ module_aglu_LB134.Diet_Rfao <- function(command, ...) {
       prev_yr <- max(HISTORICAL_YEARS)
       # Because of the dependencies involved, I couldn't figure out a way
       # not to use a loop here.  :(
-      for(yr in sort(FUTURE_YEARS)) {
+      for(yr in sort(aglu.SSP_DEMAND_YEARS[aglu.SSP_DEMAND_YEARS %in% FUTURE_YEARS])) {
         d <- filter(raw_demand, year == yr)
         d_prev <- filter(raw_demand, year == prev_yr)
         capped_ratio <- pmin(d$demand_kcal / d_prev$demand_kcal, d$max.mult)
@@ -279,11 +285,15 @@ module_aglu_LB134.Diet_Rfao <- function(command, ...) {
         prev_yr <- yr
       }
 
-      # Finally, replace any NAs with zeroes
+      # Replace any NAs with zeroes, and interpolate to all future years
       raw_demand %>%
         ungroup %>%
         select(GCAM_region_ID, GCAM_demand, year, demand_kcal) %>%
-        replace_na(list(demand_kcal = 0.0))
+        replace_na(list(demand_kcal = 0.0)) %>%
+        complete(GCAM_region_ID, GCAM_demand, year = c(HISTORICAL_YEARS, FUTURE_YEARS)) %>%
+        group_by(GCAM_region_ID, GCAM_demand) %>%
+        mutate(demand_kcal = approx_fun(year, demand_kcal)) %>%
+        ungroup()
     }
 
     L134.pcFood_est_R_Dmnd_Y_ssp1_crops <- create_ssp_demand(L102.pcgdp_thous90USD_Scen_R_Y, "SSP1", "crops", L134.pcFood_kcald_R_Dmnd_Y, A_FoodDemand_SSPs)

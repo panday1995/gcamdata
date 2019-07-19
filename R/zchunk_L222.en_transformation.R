@@ -1,3 +1,5 @@
+# Copyright 2019 Battelle Memorial Institute; see the LICENSE file.
+
 #' module_energy_L222.en_transformation
 #'
 #' Prepare the assumptions and calibrated outputs for energy transformation supplysectors, subsectors, and technologies.
@@ -18,7 +20,7 @@
 #' @details This chunk sets up the energy transformation global technology database as well as writing out assumptions to all regions for shareweights and logits.
 #' Calibrated outputs for gas processing and oil refining as well as I:O coefficients are interpolated from historical values to base model years.
 #' @importFrom assertthat assert_that
-#' @importFrom dplyr filter mutate select
+#' @importFrom dplyr arrange bind_rows filter if_else group_by left_join mutate select semi_join
 #' @importFrom tidyr gather spread
 #' @author CWR Sept 2017
 module_energy_L222.en_transformation <- function(command, ...) {
@@ -165,7 +167,7 @@ module_energy_L222.en_transformation <- function(command, ...) {
 
     A22.globaltech_coef %>%
       gather_years(value_col = "coefficient") %>%
-      complete(nesting(supplysector, subsector, technology, minicam.energy.input), year = c(year, BASE_YEARS, FUTURE_YEARS)) %>%
+      complete(nesting(supplysector, subsector, technology, minicam.energy.input), year = c(year, MODEL_BASE_YEARS, MODEL_FUTURE_YEARS)) %>%
       arrange(supplysector, year) %>%
       group_by(supplysector, subsector, technology, minicam.energy.input) %>%
       mutate(coefficient = approx_fun(year, coefficient, rule = 1)) %>%
@@ -222,12 +224,12 @@ module_energy_L222.en_transformation <- function(command, ...) {
     # No need to consider historical periods here
     A22.globaltech_co2capture %>%
       gather_years(value_col = "remove.fraction") %>%
-      complete(nesting(supplysector, subsector, technology), year = c(year, FUTURE_YEARS)) %>%
+      complete(nesting(supplysector, subsector, technology), year = c(year, MODEL_FUTURE_YEARS)) %>%
       arrange(supplysector, year) %>%
       group_by(supplysector, subsector, technology) %>%
       mutate(remove.fraction = approx_fun(year, remove.fraction, rule = 1)) %>%
       ungroup() %>%
-      filter(year %in% FUTURE_YEARS) %>%
+      filter(year %in% MODEL_FUTURE_YEARS) %>%
       # Assign the columns "sector.name" and "subsector.name", consistent with the location info of a global technology
       rename(sector.name = supplysector, subsector.name = subsector) %>%
       # Rounds the fraction to two digits and adds the name of the carbon storage market
@@ -246,8 +248,8 @@ module_energy_L222.en_transformation <- function(command, ...) {
     # Copies first future year retirment information into all future years and appends back onto base year
     L222.globaltech_retirement_base %>%
       mutate(year = as.integer(year)) %>%
-      filter(year == min(FUTURE_YEARS)) %>%
-      repeat_add_columns(tibble(year = FUTURE_YEARS)) %>%
+      filter(year == min(MODEL_FUTURE_YEARS)) %>%
+      repeat_add_columns(tibble(year = MODEL_FUTURE_YEARS)) %>%
       select(-year.x) %>%
       rename(year = year.y) ->
       L222.globaltech_retirement_future
@@ -255,7 +257,7 @@ module_energy_L222.en_transformation <- function(command, ...) {
     # filters base years from original and then appends future years
     L222.globaltech_retirement_base %>%
       mutate(year = as.integer(year)) %>%
-      filter(year == max(BASE_YEARS)) %>%
+      filter(year == max(MODEL_BASE_YEARS)) %>%
       bind_rows(L222.globaltech_retirement_future) ->
       L222.globaltech_retirement
 
@@ -295,12 +297,12 @@ module_energy_L222.en_transformation <- function(command, ...) {
     #2d. Calibration and region-specific data
     #  generate base year calibrated outputs of gas processing by interpolating from historical values
     L122.out_EJ_R_gasproc_F_Yh %>%
-      complete(nesting(GCAM_region_ID, sector, fuel), year = c(year, BASE_YEARS)) %>%
+      complete(nesting(GCAM_region_ID, sector, fuel), year = c(year, MODEL_BASE_YEARS)) %>%
       arrange(GCAM_region_ID, year) %>%
       group_by(GCAM_region_ID, sector, fuel) %>%
       mutate(value = approx_fun(year, value, rule = 1)) %>%
       ungroup() %>%
-      filter(year %in% BASE_YEARS) %>%
+      filter(year %in% MODEL_BASE_YEARS) %>%
       # append region names
       left_join_error_no_match(GCAM_region_names, by = "GCAM_region_ID") ->
       L222.out_EJ_R_gasproc_F_Yh_base
@@ -319,7 +321,7 @@ module_energy_L222.en_transformation <- function(command, ...) {
       filter(supplysector == "gas processing") %>%
       write_to_all_regions(c("region", "supplysector", "subsector", "technology", "minicam.energy.input"), GCAM_region_names) %>%
       rename(stub.technology = technology) %>%
-      repeat_add_columns(tibble(year = BASE_YEARS)) %>%
+      repeat_add_columns(tibble(year = MODEL_BASE_YEARS)) %>%
       left_join_error_no_match(L222.out_EJ_R_gasproc_F_Yh, by = c("region", "supplysector", "subsector", "stub.technology", "year")) %>%
       # rounds outputs and adds year column for shareweights
       mutate(calOutputValue = round(value, energy.DIGITS_CALOUTPUT), year.share.weight = year) %>%
@@ -333,12 +335,12 @@ module_energy_L222.en_transformation <- function(command, ...) {
     # Oil refining calibrated output by technology
     # interpolates values of IO coefficients for base years from historical values
     L122.out_EJ_R_refining_F_Yh %>%
-      complete(nesting(GCAM_region_ID, sector, fuel), year = c(year, BASE_YEARS)) %>%
+      complete(nesting(GCAM_region_ID, sector, fuel), year = c(year, MODEL_BASE_YEARS)) %>%
       arrange(GCAM_region_ID, year) %>%
       group_by(GCAM_region_ID, sector, fuel) %>%
       mutate(value = approx_fun(year, value, rule = 1)) %>%
       ungroup() %>%
-      filter(year %in% BASE_YEARS) %>%
+      filter(year %in% MODEL_BASE_YEARS) %>%
       # append region names
       left_join_error_no_match(GCAM_region_names, by = "GCAM_region_ID") ->
       L222.out_EJ_R_refining_F_Yh
@@ -363,12 +365,12 @@ module_energy_L222.en_transformation <- function(command, ...) {
     # L222.StubTechCoef_refining: calibrated input-output coefficients of oil refining by region and input
     # interpolates values of IO coefficients for base years from historical values
     L122.IO_R_oilrefining_F_Yh %>%
-      complete(nesting(GCAM_region_ID, sector, fuel), year = c(year, BASE_YEARS)) %>%
+      complete(nesting(GCAM_region_ID, sector, fuel), year = c(year, MODEL_BASE_YEARS)) %>%
       arrange(GCAM_region_ID, year) %>%
       group_by(GCAM_region_ID, sector, fuel) %>%
       mutate(value = approx_fun(year, value, rule = 1)) %>%
       ungroup() %>%
-      filter(year %in% BASE_YEARS) %>%
+      filter(year %in% MODEL_BASE_YEARS) %>%
       # append region names
       left_join_error_no_match(GCAM_region_names, by = "GCAM_region_ID") ->
       L222.IO_R_oilrefining_F_Yh

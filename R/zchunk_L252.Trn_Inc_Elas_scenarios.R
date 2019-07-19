@@ -1,3 +1,5 @@
+# Copyright 2019 Battelle Memorial Institute; see the LICENSE file.
+
 #' module_socioeconomics_L252.Trn_Inc_Elas_scenarios
 #'
 #' Calculates transportation income elasticity for SSP scenarios using linear interpolation of assumption data
@@ -10,7 +12,7 @@
 #' original data system was \code{L252.Trn_Inc_Elas_scenarios.R} (socioeconomics level2).
 #' @details Uses per-capita GDP data for SSP scenarios to generate transportation income elasticity using linear interpolation of assumption data.
 #' @importFrom assertthat assert_that
-#' @importFrom dplyr filter mutate select
+#' @importFrom dplyr filter left_join mutate select transmute
 #' @importFrom tidyr gather spread
 #' @importFrom stats approx
 #' @author RH May 2017
@@ -52,7 +54,7 @@ module_socioeconomics_L252.Trn_Inc_Elas_scenarios <- function(command, ...) {
     # ===================================================
     # For SSP scenarios, linearly interpolate income elasticity at each level of per-capita GDP
     L252.IncomeElasticity_trn_SSP <- L102.pcgdp_thous90USD_Scen_R_Y %>%
-      filter(year %in% FUTURE_YEARS) %>%
+      filter(year %in% MODEL_FUTURE_YEARS) %>%
       # Using approx rather than approx_fun because data is from assumption file, not in our tibble
       mutate(income.elasticity = approx(x = A52.inc_elas$pcgdp_90thousUSD, y = A52.inc_elas$inc_elas,
                                         # Rule 2 means that data outside of the interval of input
@@ -78,7 +80,7 @@ module_socioeconomics_L252.Trn_Inc_Elas_scenarios <- function(command, ...) {
     # For the GCAM 3.0 scenario, calculate the per-capita GDP
     L252.IncomeElasticity_trn_GCAM3 <- L102.gdp_mil90usd_GCAM3_R_Y %>%
       left_join_error_no_match(L101.Pop_thous_GCAM3_R_Y, by = c("GCAM_region_ID", "year")) %>%
-      filter(year %in% FUTURE_YEARS) %>%
+      filter(year %in% MODEL_FUTURE_YEARS) %>%
       left_join_error_no_match(GCAM_region_names, by = "GCAM_region_ID") %>%
       transmute(region, year, pcgdp_90thousUSD = value.x / value.y) %>%
       # Using approx rather than approx_fun because data is from assumption file, not in our tibble

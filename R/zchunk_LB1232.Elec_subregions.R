@@ -1,3 +1,5 @@
+# Copyright 2019 Battelle Memorial Institute; see the LICENSE file.
+
 #' module_gcam.usa_LB1232.Elec_subregions
 #'
 #' Aggregates USA state electricity generation to electricity subregions.
@@ -10,7 +12,7 @@
 #' original data system was \code{LB1232.Elec_subregions.R} (gcam-usa level1).
 #' @details Aggregates USA state electricity generation to electricity subregions.
 #' @importFrom assertthat assert_that
-#' @importFrom dplyr filter mutate select
+#' @importFrom dplyr group_by left_join select summarise
 #' @importFrom tidyr gather spread
 #' @author RLH September 2017
 module_gcam.usa_LB1232.Elec_subregions <- function(command, ...) {

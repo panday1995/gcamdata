@@ -1,3 +1,5 @@
+# Copyright 2019 Battelle Memorial Institute; see the LICENSE file.
+
 #' module_modeltime_L200.modeltime
 #'
 #' Generate the model time information needed to interact with Hector or MAGICC.
@@ -11,7 +13,6 @@
 #' @details Generate the model time information needed to interact with Hector or MAGICC.
 #' @importFrom assertthat assert_that
 #' @importFrom tibble tibble
-#' @import dplyr
 #' @importFrom tidyr gather spread
 #' @author BBL
 module_modeltime_L200.modeltime <- function(command, ...) {
@@ -32,9 +33,9 @@ module_modeltime_L200.modeltime <- function(command, ...) {
     GCAM_timesteps <- diff(MODEL_YEARS)
 
     tibble(start.year.timestep    = GCAM_timesteps[1],
-           start.year             = min(BASE_YEARS),
-           final.calibration.year = max(BASE_YEARS),
-           end.year               = max(FUTURE_YEARS)) %>%
+           start.year             = min(MODEL_BASE_YEARS),
+           final.calibration.year = max(MODEL_BASE_YEARS),
+           end.year               = max(MODEL_FUTURE_YEARS)) %>%
       add_title("GCAM time information") %>%
       add_units("years") %>%
       add_legacy_name("L200.ModelTime") %>%
@@ -46,7 +47,8 @@ module_modeltime_L200.modeltime <- function(command, ...) {
     GCAM_interyear.timesteps <- GCAM_timesteps[changeyears]
 
     tibble(inter.year.timestep = GCAM_interyear.timesteps,
-           inter.year          = GCAM_interyears) %>%
+           inter.year          = GCAM_interyears,
+           dummy.tag           = seq_along(GCAM_interyears)) %>% # dummy tag avoids later years over-writing prior years that have the same timestep length
       add_title("GCAM timestep change information") %>%
       add_units("years") %>%
       add_legacy_name("L200.ModelTimeInterYears") %>%

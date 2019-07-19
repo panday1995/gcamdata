@@ -1,3 +1,5 @@
+# Copyright 2019 Battelle Memorial Institute; see the LICENSE file.
+
 #' module_water_L210.water.demand.primary
 #'
 #' Generate (water demand) technology coefficients for each GCAM region for base years and future years.
@@ -11,7 +13,7 @@
 #' @details This chunk generate (water demand) technology coefficients for each GCAM region for base years and future years,
 #' with information of supplysector, subsector, technology, minicam.energy.input and market.name.
 #' @importFrom assertthat assert_that
-#' @importFrom dplyr filter mutate select
+#' @importFrom dplyr bind_rows filter left_join mutate select
 #' @importFrom tidyr gather spread
 #' @author YL May 2017
 module_water_L210.water.demand.primary <- function(command, ...) {
@@ -53,8 +55,8 @@ module_water_L210.water.demand.primary <- function(command, ...) {
       # Avoid double acounting unconventional oil in the regional oil sector as it is already
       # accounted for in unconventional oil production.
       filter(!(supplysector %in% "regional oil" & subsector %in% "unconventional oil")) %>%
-      mutate(water_sector = "Mining") %>%
-      mutate(minicam.energy.input = set_water_input_name(water_sector, water_type, A03.sector)) %>%
+      mutate(water_sector = "Mining",
+             minicam.energy.input = set_water_input_name(water_sector, water_type, A03.sector)) %>%
       # Add in GCAM region names
       left_join_error_no_match(GCAM_region_names, by = "GCAM_region_ID") %>%
       mutate(market.name = region) ->

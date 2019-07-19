@@ -1,3 +1,5 @@
+# Copyright 2019 Battelle Memorial Institute; see the LICENSE file.
+
 #' module_aglu_L2242.land_input_4_irr_mgmt
 #'
 #' Generate logit exponent of the fourth land node that specifies crop commodity and GLU by region,
@@ -12,7 +14,7 @@
 #' @details This chunk generates the logit exponent of the fourth land nest that specifies crop commodity and GLU by region,
 #' and the ghost node share for the bionenergy node in future years, and specifies whether the bionenergy ghost node share is relative.
 #' @importFrom assertthat assert_that
-#' @importFrom dplyr filter mutate select
+#' @importFrom dplyr bind_rows distinct filter if_else left_join mutate select
 #' @importFrom tidyr gather spread
 #' @author RC August 2017
 module_aglu_L2242.land_input_4_irr_mgmt <- function(command, ...) {
@@ -56,7 +58,7 @@ module_aglu_L2242.land_input_4_irr_mgmt <- function(command, ...) {
              AgSupplySubsector = sub("biomass_tree", "biomasstree", AgSupplySubsector),
              AgSupplySubsector = sub("biomass_grass", "biomassgrass", AgSupplySubsector)) %>%
       separate(AgSupplySubsector, c("LandNode4", "GLU_name")) %>%
-      mutate(logit.year.fillout = min(BASE_YEARS),
+      mutate(logit.year.fillout = min(MODEL_BASE_YEARS),
              # Modify land node variable to match in logit exponent values
              LandNode4 = sub("RootTuber", "Root_Tuber", LandNode4),
              LandNode4 = sub("biomasstree", "biomass_tree", LandNode4),
@@ -75,16 +77,16 @@ module_aglu_L2242.land_input_4_irr_mgmt <- function(command, ...) {
     # Specify ghost node share for bioenergy node in future years (starting with first bio year).
     L2012.AgYield_bio_ref %>%
       distinct(region, AgSupplySubsector) %>%
-      mutate(GCAM_commodity = if_else(grepl("^biomass_grass", AgSupplySubsector), "biomass_grass", "biomass_tree")) %>%
-      mutate(GLU_name = if_else(grepl("^biomass_grass", AgSupplySubsector), gsub("biomass_grass_", "", AgSupplySubsector),
+      mutate(GCAM_commodity = if_else(grepl("^biomass_grass", AgSupplySubsector), "biomass_grass", "biomass_tree"),
+             GLU_name = if_else(grepl("^biomass_grass", AgSupplySubsector), gsub("biomass_grass_", "", AgSupplySubsector),
                                                                             gsub("biomass_tree_", "", AgSupplySubsector))) %>%
       left_join_error_no_match(A_LT_Mapping, by = "GCAM_commodity") %>%
-      mutate(LandAllocatorRoot = "root") %>%
-      mutate(LandNode1 = paste(LandNode1, GLU_name, sep = "_")) %>%
-      mutate(LandNode2 = paste(LandNode2, GLU_name, sep = "_")) %>%
-      mutate(LandNode3 = paste(LandNode3, GLU_name, sep = "_")) %>%
-      mutate(LandNode4 = paste(LandLeaf, GLU_name, sep = "_")) %>%
-      repeat_add_columns(tibble::tibble(year = FUTURE_YEARS)) %>%
+      mutate(LandAllocatorRoot = "root",
+             LandNode1 = paste(LandNode1, GLU_name, sep = "_"),
+             LandNode2 = paste(LandNode2, GLU_name, sep = "_"),
+             LandNode3 = paste(LandNode3, GLU_name, sep = "_"),
+             LandNode4 = paste(LandLeaf, GLU_name, sep = "_")) %>%
+      repeat_add_columns(tibble::tibble(year = MODEL_FUTURE_YEARS)) %>%
       filter(year >= aglu.BIO_START_YEAR) %>%
       left_join(A_bio_ghost_share, by = "year") %>%
       mutate(ghost.unnormalized.share = approx_fun(year, ghost.share)) %>%

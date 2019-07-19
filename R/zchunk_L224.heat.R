@@ -1,3 +1,5 @@
+# Copyright 2019 Battelle Memorial Institute; see the LICENSE file.
+
 #' module_energy_L224.heat
 #'
 #' Write district heat sector outputs.
@@ -14,7 +16,7 @@
 #' by interpolating assumptions. From the level 1 heat data, this chunk computes stub tech calibrated inputs, secondary
 #' outputs from elec and modified costs.
 #' @importFrom assertthat assert_that
-#' @importFrom dplyr filter mutate select
+#' @importFrom dplyr bind_rows distinct filter if_else group_by left_join mutate select
 #' @importFrom tidyr gather spread
 #' @author JDH August 2017
 module_energy_L224.heat <- function(command, ...) {
@@ -144,7 +146,7 @@ module_energy_L224.heat <- function(command, ...) {
       select(supplysector, subsector, technology, minicam.energy.input) %>%
       distinct %>%
       # Interpolate to all years
-      repeat_add_columns(tibble(year = c(HISTORICAL_YEARS, FUTURE_YEARS))) %>%
+      repeat_add_columns(tibble(year = c(HISTORICAL_YEARS, MODEL_FUTURE_YEARS))) %>%
       left_join(A24.globaltech_coef, by = c("supplysector", "subsector", "technology", "minicam.energy.input", "year")) %>%
       mutate(coef = round(approx_fun(year, value = coef, rule = 1), energy.DIGITS_COEFFICIENT)) %>%
       filter(year %in% MODEL_YEARS) %>%
@@ -157,7 +159,7 @@ module_energy_L224.heat <- function(command, ...) {
       select(supplysector, subsector, technology, minicam.non.energy.input) %>%
       distinct %>%
       # Interpolate to all years
-      repeat_add_columns(tibble(year = c(HISTORICAL_YEARS, FUTURE_YEARS))) %>%
+      repeat_add_columns(tibble(year = c(HISTORICAL_YEARS, MODEL_FUTURE_YEARS))) %>%
       left_join(A24.globaltech_cost, by = c("supplysector", "subsector", "technology", "minicam.non.energy.input", "year")) %>%
       group_by(supplysector, subsector, technology, minicam.non.energy.input) %>%
       mutate(input.cost = round(approx_fun(year, value = input.cost, rule = 1), energy.DIGITS_COST)) %>%
@@ -172,7 +174,7 @@ module_energy_L224.heat <- function(command, ...) {
       select(supplysector, subsector, technology) %>%
       distinct %>%
       # Interpolate to all years
-      repeat_add_columns(tibble(year = c(HISTORICAL_YEARS, FUTURE_YEARS))) %>%
+      repeat_add_columns(tibble(year = c(HISTORICAL_YEARS, MODEL_FUTURE_YEARS))) %>%
       left_join(A24.globaltech_shrwt, by = c("supplysector", "subsector", "technology", "year")) %>%
       mutate(share.weight = approx_fun(year, value = share.weight, rule = 1)) %>%
       filter(year %in% MODEL_YEARS) %>%
@@ -185,13 +187,13 @@ module_energy_L224.heat <- function(command, ...) {
                   select(sector, fuel, supplysector, subsector, technology, minicam.energy.input) %>%
                   distinct, by = c("sector", "fuel")) %>%
       rename(stub.technology = technology) %>%
-      filter(year %in% MODEL_YEARS) %>%
+      filter(year %in% MODEL_BASE_YEARS) %>%
       filter(region %in% heat_region$region) %>%
       select(LEVEL2_DATA_NAMES[["StubTechYr"]], "minicam.energy.input", "value") %>%
-      mutate(calibrated.value = round(value, energy.DIGITS_CALOUTPUT)) %>%
-      mutate(year.share.weight = year) %>%
-      mutate(subs.share.weight = if_else(calibrated.value == 0, 0, 1)) %>%
-      mutate(share.weight = subs.share.weight) %>%
+      mutate(calibrated.value = round(value, energy.DIGITS_CALOUTPUT),
+             year.share.weight = year,
+             subs.share.weight = if_else(calibrated.value == 0, 0, 1),
+             share.weight = subs.share.weight) %>%
       select(-value) -> L224.StubTechCalInput_heat
 
     # Secondary output of heat, applied to electricity generation technologies
@@ -201,13 +203,13 @@ module_energy_L224.heat <- function(command, ...) {
     # exceed the demands from the end-use sectors, causing model solution failure. For this reason, the convention applied here is to
     # use the secondary output of heat from the power sector only in the model base years.
     L124.heatoutratio_R_elec_F_tech_Yh %>%
-      filter(year %in% MODEL_YEARS) %>%
+      filter(year %in% MODEL_BASE_YEARS) %>%
       left_join(GCAM_region_names, by = "GCAM_region_ID") %>%
       left_join(calibrated_techs %>%
                   select(sector, fuel, supplysector, subsector, technology) %>%
                   distinct, by = c("sector", "fuel", "technology")) %>%
-      mutate(stub.technology = technology) %>%
-      mutate(secondary.output.name = A24.sector[["supplysector"]]) %>%
+      mutate(stub.technology = technology,
+             secondary.output.name = A24.sector[["supplysector"]]) %>%
       select(LEVEL2_DATA_NAMES[["StubTechYr"]], "secondary.output.name", "value") %>%
       mutate(secondary.output = round(value, energy.DIGITS_CALOUTPUT)) %>%
       select(-value) -> L224.StubTechSecOut_elec
@@ -215,8 +217,8 @@ module_energy_L224.heat <- function(command, ...) {
     # Calculate cost adjustment, equal to the output of heat multiplied by the heat price (to minimize the distortion of including the secondary output)
     L224.StubTechSecOut_elec %>%
       select(LEVEL2_DATA_NAMES[["StubTechYr"]], "secondary.output") %>%
-      mutate(minicam.non.energy.input = "heat plant") %>%
-      mutate(input.cost = round(secondary.output*energy.HEAT_PRICE, energy.DIGITS_COST))-> L224.StubTechCost_elec
+      mutate(minicam.non.energy.input = "heat plant",
+             input.cost = round(secondary.output*energy.HEAT_PRICE, energy.DIGITS_COST))-> L224.StubTechCost_elec
 
     # The secondary output of heat from CHP in the electric sector can cause the price of the technologies
     # to go very low or negative if the technology cost is not modified to reflect the additional costs of
@@ -245,7 +247,7 @@ module_energy_L224.heat <- function(command, ...) {
     L224.StubTechCost_elec %>%
       filter(year == max(year)) %>%
       select(-year) %>%
-      repeat_add_columns(tibble(year = FUTURE_YEARS)) %>%
+      repeat_add_columns(tibble(year = MODEL_FUTURE_YEARS)) %>%
       mutate(input.cost = 0) -> L224.StubTechCost_elec_fut
 
     L224.StubTechCost_elec %>%

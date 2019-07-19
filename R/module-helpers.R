@@ -1,3 +1,5 @@
+# Copyright 2019 Battelle Memorial Institute; see the LICENSE file.
+
 # module-helpers.R
 # Module specific helper functions
 
@@ -13,7 +15,7 @@
 #' by looking up using a mapping to the water.sector and water_type. The minicam.energy.input
 #' name to use will have to be some water mapping sector for water_types that are "mapped".
 #' @return A vector of names of form supplysector_watertype or supplysector_GLU_watertype.
-#' @importFrom dplyr filter mutate select
+#' @importFrom dplyr bind_rows filter matches mutate select summarise
 #' @importFrom tidyr gather spread
 #' @importFrom assertthat assert_that
 #' @author BBL April 2017
@@ -185,12 +187,12 @@ set_traded_names <- function(data, GCAM_region_names, apply_selected_only = TRUE
 set_years <- function(data) {
   assert_that(is_tibble(data))
   if(nrow(data)) {
-    data[data == "start-year"] <- min(BASE_YEARS)
-    data[data == "final-calibration-year"] <- max(BASE_YEARS)
+    data[data == "start-year"] <- min(MODEL_BASE_YEARS)
+    data[data == "final-calibration-year"] <- max(MODEL_BASE_YEARS)
     data[data == "final-historical-year"] <- max(HISTORICAL_YEARS)
-    data[data == "initial-future-year"] <- min(FUTURE_YEARS)
+    data[data == "initial-future-year"] <- min(MODEL_FUTURE_YEARS)
     data[data == "initial-nonhistorical-year"] <- min(MODEL_YEARS[MODEL_YEARS > max(HISTORICAL_YEARS)])
-    data[data == "end-year"] <- max(FUTURE_YEARS)
+    data[data == "end-year"] <- max(MODEL_FUTURE_YEARS)
   }
   data
 }
@@ -363,7 +365,7 @@ add_carbon_info <- function( data, carbon_info_table, matchvars = c("region", "G
     mutate(hist.veg.carbon.density = round(hist.veg.carbon.density, aglu.DIGITS_C_DENSITY),
            hist.soil.carbon.density = round(hist.soil.carbon.density, aglu.DIGITS_C_DENSITY),
            mature.age = round(mature.age, aglu.DIGITS_MATUREAGE),
-           mature.age.year.fillout = min(BASE_YEARS),
+           mature.age.year.fillout = min(MODEL_BASE_YEARS),
            veg.carbon.density = hist.veg.carbon.density,
            soil.carbon.density = hist.soil.carbon.density,
            min.veg.carbon.density = aglu.MIN_VEG_CARBON_DENSITY,
@@ -385,14 +387,14 @@ reduce_mgd_carbon <- function( data, LTfor = "Forest", LTpast = "Pasture") {
     hist.soil.carbon.density <- soil.carbon.density <- NULL # silence package check notes
 
   data %>%
-    mutate(hist.veg.carbon.density = if_else(Land_Type == LTpast, hist.veg.carbon.density * aglu.CVEG_MULT_UNMGDPAST_MGDPAST, hist.veg.carbon.density)) %>%
-    mutate(veg.carbon.density = if_else(Land_Type == LTpast, veg.carbon.density * aglu.CVEG_MULT_UNMGDPAST_MGDPAST, veg.carbon.density)) %>%
-    mutate(hist.soil.carbon.density = if_else(Land_Type == LTpast, hist.soil.carbon.density * aglu.CSOIL_MULT_UNMGDPAST_MGDPAST, hist.soil.carbon.density)) %>%
-    mutate(soil.carbon.density = if_else(Land_Type == LTpast, soil.carbon.density * aglu.CSOIL_MULT_UNMGDPAST_MGDPAST, soil.carbon.density)) %>%
-    mutate(hist.veg.carbon.density = if_else(Land_Type == LTfor, hist.veg.carbon.density * aglu.CVEG_MULT_UNMGDFOR_MGDFOR, hist.veg.carbon.density)) %>%
-    mutate(veg.carbon.density = if_else(Land_Type == LTfor, veg.carbon.density * aglu.CVEG_MULT_UNMGDFOR_MGDFOR, veg.carbon.density)) %>%
-    mutate(hist.soil.carbon.density = if_else(Land_Type == LTfor, hist.soil.carbon.density * aglu.CSOIL_MULT_UNMGDFOR_MGDFOR, hist.soil.carbon.density)) %>%
-    mutate(soil.carbon.density = if_else(Land_Type == LTfor, soil.carbon.density * aglu.CSOIL_MULT_UNMGDFOR_MGDFOR, soil.carbon.density))
+    mutate(hist.veg.carbon.density = if_else(Land_Type == LTpast, hist.veg.carbon.density * aglu.CVEG_MULT_UNMGDPAST_MGDPAST, hist.veg.carbon.density),
+           veg.carbon.density = if_else(Land_Type == LTpast, veg.carbon.density * aglu.CVEG_MULT_UNMGDPAST_MGDPAST, veg.carbon.density),
+           hist.soil.carbon.density = if_else(Land_Type == LTpast, hist.soil.carbon.density * aglu.CSOIL_MULT_UNMGDPAST_MGDPAST, hist.soil.carbon.density),
+           soil.carbon.density = if_else(Land_Type == LTpast, soil.carbon.density * aglu.CSOIL_MULT_UNMGDPAST_MGDPAST, soil.carbon.density),
+           hist.veg.carbon.density = if_else(Land_Type == LTfor, hist.veg.carbon.density * aglu.CVEG_MULT_UNMGDFOR_MGDFOR, hist.veg.carbon.density),
+           veg.carbon.density = if_else(Land_Type == LTfor, veg.carbon.density * aglu.CVEG_MULT_UNMGDFOR_MGDFOR, veg.carbon.density),
+           hist.soil.carbon.density = if_else(Land_Type == LTfor, hist.soil.carbon.density * aglu.CSOIL_MULT_UNMGDFOR_MGDFOR, hist.soil.carbon.density),
+           soil.carbon.density = if_else(Land_Type == LTfor, soil.carbon.density * aglu.CSOIL_MULT_UNMGDFOR_MGDFOR, soil.carbon.density))
 }
 
 
@@ -462,7 +464,7 @@ get_ssp_regions <- function(pcGDP, reg_names, income_group,
 #' column and will include all values in \code{out_years} and the filled in values will
 #' be in the \code{value} column.  All extrapolation parameters will be cleaned out.
 #' @importFrom tibble has_name
-#' @importFrom dplyr filter mutate select setdiff rename ungroup
+#' @importFrom dplyr bind_rows filter matches mutate select summarise rename ungroup
 #' @importFrom tidyr gather complete
 #' @importFrom assertthat assert_that
 #' @author Pralit Patel
@@ -524,7 +526,7 @@ fill_exp_decay_extrapolate <- function(d, out_years) {
     d_no_extrap
 
   d %>%
-    setdiff(d_no_extrap) ->
+    dplyr::setdiff(d_no_extrap) ->
     d_extrap
 
   # First partition the technologies that are not "shadowing" another technology
@@ -556,21 +558,21 @@ fill_exp_decay_extrapolate <- function(d, out_years) {
                              by = c("improvement.shadow.technology" = "technology", "year" = "year")) %>%
     # figure out the last specified year from which we will be extrapolating
     # (adding a -Inf in case there are no extrapolation years, to avoid a warning)
-    mutate(year_base = max(c(-Inf, year[!is.na(value)]))) %>%
-    # for shadowing technologies the decay is only applied to the difference
-    # in the values in the last year in which one was specified
-    # this is to allow for instance a Gas CC plant to have cost reductions at
-    # a moderate pace but a Gas CC+CCS can have rapid cost reductions to
-    # the CCS portion of the cost
-    mutate(value_base = value - shadow.value) %>%
-    mutate(value_base = value_base[year == year_base]) %>%
-    mutate(value = if_else(is.na(value),
+    mutate(year_base = max(c(-Inf, year[!is.na(value)])),
+           # for shadowing technologies the decay is only applied to the difference
+           # in the values in the last year in which one was specified
+           # this is to allow for instance a Gas CC plant to have cost reductions at
+           # a moderate pace but a Gas CC+CCS can have rapid cost reductions to
+           # the CCS portion of the cost
+           value_base = value - shadow.value,
+           value_base = value_base[year == year_base],
+           value = if_else(is.na(value),
                            shadow.value +
                              value_base * improvement.max + (value_base - value_base * improvement.max ) *
                              (1.0 - improvement.rate) ^ (year - year_base),
                            value)) %>%
     # drop the extra columns created for the shadow / exp decay calculation
-    select_(.dots = paste0('`', names(d_nonshadowed), '`')) %>%
+    dplyr::select_(.dots = paste0('`', names(d_nonshadowed), '`')) %>%
     ungroup() ->
     d_shadowed
 
@@ -590,6 +592,7 @@ fill_exp_decay_extrapolate <- function(d, out_years) {
 #' @param country_name Pre-dissolution country name, character
 #' @param dissolution_year Year of country dissolution, integer
 #' @param years Years to operate on, integer vector
+#' @importFrom dplyr group_by select summarise_all ungroup
 #' @importFrom stats aggregate
 #' @return Downscaled data.
 downscale_FAO_country <- function(data, country_name, dissolution_year, years = aglu.AGLU_HISTORICAL_YEARS) {

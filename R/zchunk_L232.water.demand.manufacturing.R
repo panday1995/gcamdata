@@ -1,3 +1,5 @@
+# Copyright 2019 Battelle Memorial Institute; see the LICENSE file.
+
 #' module_water_L232.water.demand.manufacturing
 #'
 #' Computes manufacturing water withdrawal/consumption coefficients (m3/GJ output) by region and year
@@ -10,7 +12,7 @@
 #' original data system was \code{L232.water.demand.manufacturing.R} (water level2).
 #' @details Describe in detail what this chunk does.
 #' @importFrom assertthat assert_that
-#' @importFrom dplyr filter mutate select
+#' @importFrom dplyr arrange distinct filter if_else group_by left_join mutate select
 #' @importFrom tidyr gather spread
 #' @author GPK June 2018
 module_water_L232.water.demand.manufacturing <- function(command, ...) {
@@ -26,7 +28,8 @@ module_water_L232.water.demand.manufacturing <- function(command, ...) {
 
     all_data <- list(...)[[1]]
 
-    water_sector <- water_type <- region <- supplysector <- subsector <- technology <-
+    stub.technology <- subs.share.weight <- tech.share.weight <- share.weight.year <-
+      water_sector <- water_type <- region <- supplysector <- subsector <- technology <-
       year <- minicam.energy.input <- coefficient <- market.name <- calOutputValue <-
       water_km3 <- energy_EJ <- NULL  # silence package check notes
 
@@ -50,8 +53,8 @@ module_water_L232.water.demand.manufacturing <- function(command, ...) {
 
     # First, compute historical coefficients, as total withdrawals/consumption divided by industrial sector output
     # (base-service)
-    L132.water_km3_R_ind_Yh %>%
-      filter(year %in% MODEL_YEARS) %>%
+    L232.water_km3_R_ind_Yh <-
+      filter(L132.water_km3_R_ind_Yh, year %in% MODEL_BASE_YEARS) %>%
       left_join_error_no_match(GCAM_region_names, by = "GCAM_region_ID") %>%
       left_join_error_no_match(L232.StubTechProd_industry, by = c("region", "year")) %>%
       rename(energy_EJ = calOutputValue) %>%
@@ -69,7 +72,7 @@ module_water_L232.water.demand.manufacturing <- function(command, ...) {
       # Fill out the values in the final base year to all future years
       group_by(region, supplysector, subsector, technology, minicam.energy.input, market.name) %>%
       complete(year = MODEL_YEARS) %>%
-      mutate(coefficient = if_else(year %in% FUTURE_YEARS, coefficient[year == max(BASE_YEARS)], coefficient)) %>%
+      mutate(coefficient = if_else(year %in% MODEL_FUTURE_YEARS, coefficient[year == max(MODEL_BASE_YEARS)], coefficient)) %>%
       ungroup() %>%
 
       # add attributes for output

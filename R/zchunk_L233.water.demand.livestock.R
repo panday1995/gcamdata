@@ -1,3 +1,5 @@
+# Copyright 2019 Battelle Memorial Institute; see the LICENSE file.
+
 #' module_water_L233.water.demand.livestock
 #'
 #' Generates water coefficients for region-specific livestock for model years.
@@ -12,7 +14,7 @@
 #' for region-specific livestock for#' model years (1975, 1990,2005, 2010....2100), with the information of supplysector,
 #' subsector,technology, and energy input.
 #' @importFrom assertthat assert_that
-#' @importFrom dplyr filter mutate select
+#' @importFrom dplyr inner_join left_join mutate select
 #' @importFrom tidyr gather spread
 #' @author YL July 2017
 module_water_L233.water.demand.livestock <- function(command, ...) {
@@ -40,8 +42,8 @@ module_water_L233.water.demand.livestock <- function(command, ...) {
     L133.water_demand_livestock_R_C_W_km3_Mt %>%
       rename(supplysector = GCAM_commodity) %>%
       inner_join(select(A_an_technology, supplysector, subsector, technology), by = "supplysector") %>%
-      mutate(water_sector = "Livestock") %>%
-      mutate(minicam.energy.input = set_water_input_name(water_sector, water_type, A03.sector)) %>%
+      mutate(water_sector = "Livestock",
+             minicam.energy.input = set_water_input_name(water_sector, water_type, A03.sector)) %>%
       left_join(GCAM_region_names, by = "GCAM_region_ID") %>%
       mutate(market.name = region) %>%
       # Set the coef for all years

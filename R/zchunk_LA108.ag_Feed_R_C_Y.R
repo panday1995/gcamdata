@@ -1,3 +1,5 @@
+# Copyright 2019 Battelle Memorial Institute; see the LICENSE file.
+
 #' module_aglu_LA108.ag_Feed_R_C_Y
 #'
 #' Compute (1) feed by GCAM commodity, region, and year, and (2) net exports of FodderHerb.
@@ -14,7 +16,7 @@
 #' Excess supply is mapped to OtherUses. Excess demand is mapped to other sources (Residue, Pasture).
 #' This information is used to calculate net exports of FodderHerb too.
 #' @importFrom assertthat assert_that
-#' @importFrom dplyr filter mutate select
+#' @importFrom dplyr bind_rows filter if_else group_by left_join mutate right_join select summarize
 #' @importFrom tidyr gather spread
 #' @author KVC April 2017
 module_aglu_LA108.ag_Feed_R_C_Y <- function(command, ...) {
@@ -22,7 +24,7 @@ module_aglu_LA108.ag_Feed_R_C_Y <- function(command, ...) {
     return(c(FILE = "common/iso_GCAM_regID",
              FILE = "aglu/FAO/FAO_ag_items_cal_SUA",
              "L100.FAO_ag_Feed_t",
-             "L103.ag_Prod_Mt_R_C_Y",
+             "L101.ag_Prod_Mt_R_C_Y",
              "L107.an_Feed_Mt_R_C_Sys_Fd_Y"))
   } else if(command == driver.DECLARE_OUTPUTS) {
     return(c("L108.ag_Feed_Mt_R_C_Y",
@@ -30,9 +32,9 @@ module_aglu_LA108.ag_Feed_R_C_Y <- function(command, ...) {
   } else if(command == driver.MAKE) {
 
     iso <- item <- year <- value <- GCAM_commodity <- GCAM_region_ID <- feed <-
-        Feedfrac <- FodderHerb <- FodderHerb_Residue <- residual <-
-            total_residual <- share <- Residue <- PastFodderGrass_Demand <-
-                Production <- Feed <- OtherUses <- NULL # silence package check.
+      Feedfrac <- FodderHerb <- FodderHerb_Residue <- residual <-
+      total_residual <- share <- Residue <- PastFodderGrass_Demand <-
+      Production <- Feed <- OtherUses <- NULL # silence package check.
 
     all_data <- list(...)[[1]]
 
@@ -40,7 +42,7 @@ module_aglu_LA108.ag_Feed_R_C_Y <- function(command, ...) {
     iso_GCAM_regID <- get_data(all_data, "common/iso_GCAM_regID")
     FAO_ag_items_cal_SUA <- get_data(all_data, "aglu/FAO/FAO_ag_items_cal_SUA")
     L100.FAO_ag_Feed_t <- get_data(all_data, "L100.FAO_ag_Feed_t")
-    L103.ag_Prod_Mt_R_C_Y <- get_data(all_data, "L103.ag_Prod_Mt_R_C_Y")
+    L101.ag_Prod_Mt_R_C_Y <- get_data(all_data, "L101.ag_Prod_Mt_R_C_Y")
     L107.an_Feed_Mt_R_C_Sys_Fd_Y <- get_data(all_data, "L107.an_Feed_Mt_R_C_Sys_Fd_Y")
 
     # Part 1: FEEDCROPS
@@ -86,7 +88,7 @@ module_aglu_LA108.ag_Feed_R_C_Y <- function(command, ...) {
     # Part 2: Calculating FodderHerb and Residue balances by region and year
     # First, compute differences between FodderHerb production and FodderHerb_Residue demand.
     # This will be used to compute Residue supply, and to adjust OtherUses of FodderHerb_Residue.
-    L103.ag_Prod_Mt_R_C_Y %>%
+    L101.ag_Prod_Mt_R_C_Y %>%
       filter(GCAM_commodity == "FodderHerb") %>%                                                                  # Filter production data for "FodderHerb"
       rename(FodderHerb = value) %>%
       left_join(filter(an_Feed_Mt_R_C_Y,feed == "FodderHerb_Residue"), by = c("GCAM_region_ID", "year")) %>%       # Map in demands for FodderHerb_Residue
@@ -108,8 +110,8 @@ module_aglu_LA108.ag_Feed_R_C_Y <- function(command, ...) {
       group_by(year) %>%
       mutate(share = residual / sum(residual)) %>%                                                             # Compute share of residual in each region
       left_join(ag_Residual_Mt_glbl_FodderHerbResidue_Y, by = "year") %>%                                       # Map in global total residual
-      mutate(total_residual = if_else(total_residual < 0, 0, total_residual)) %>%                               # Set all negative residuals to zero
-      mutate(value = share * total_residual, GCAM_commodity = "FodderHerb") %>%                                 # Compute regional residual, set commodity name to FodderHerb
+      mutate(total_residual = if_else(total_residual < 0, 0, total_residual),                               # Set all negative residuals to zero
+             value = share * total_residual, GCAM_commodity = "FodderHerb") %>%                                 # Compute regional residual, set commodity name to FodderHerb
       select(-residual, -share, -total_residual) ->
       ag_OtherUses_Mt_R_FodderHerb_Y
 
@@ -121,9 +123,9 @@ module_aglu_LA108.ag_Feed_R_C_Y <- function(command, ...) {
       group_by(year) %>%
       mutate(share = residual / sum(residual)) %>%                                                              # Compute share of residual in each region
       left_join(ag_Residual_Mt_glbl_FodderHerbResidue_Y, by = "year") %>%                                       # Map in global total residual
-      mutate(total_residual = if_else(total_residual > 0, 0, total_residual)) %>%                               # Set all positive residuals to zero
-      mutate(total_residual = total_residual * -1) %>%
-      mutate(value = share * total_residual, GCAM_commodity = "Residue") %>%                                    # Compute regional residual, set commodity name to Residue
+      mutate(total_residual = if_else(total_residual > 0, 0, total_residual),                              # Set all positive residuals to zero
+             total_residual = -total_residual,
+             value = share * total_residual, GCAM_commodity = "Residue") %>%                                    # Compute regional residual, set commodity name to Residue
       select(-residual, -share, -total_residual) ->
       ag_Feed_Mt_R_Residue_Y
 
@@ -132,8 +134,8 @@ module_aglu_LA108.ag_Feed_R_C_Y <- function(command, ...) {
     ag_Feed_Mt_R_Residue_Y %>%
       rename(Residue = value) %>%                                                                               # Start with newly calculated Residue supply
       left_join(filter(an_Feed_Mt_R_C_Y, feed == "FodderHerb_Residue"), by = c("GCAM_region_ID", "year")) %>%     # Map in FodderHerb_Residue demand
-      mutate(FodderHerb_Residue = value) %>%
-      mutate(value = FodderHerb_Residue - Residue, GCAM_commodity = "FodderHerb") %>%                           # Compute FodderHerb = FodderHerb_Residue - Residue
+      mutate(FodderHerb_Residue = value,
+             value = FodderHerb_Residue - Residue, GCAM_commodity = "FodderHerb") %>%                           # Compute FodderHerb = FodderHerb_Residue - Residue
       select(-feed, -Residue, -FodderHerb_Residue) ->
       ag_Feed_Mt_R_FodderHerb_Y
 
@@ -144,7 +146,7 @@ module_aglu_LA108.ag_Feed_R_C_Y <- function(command, ...) {
     an_Feed_Mt_R_C_Y %>%
       filter(feed == "Pasture_FodderGrass") %>%                                                                 # Start with Pasture_FodderGrass demand
       rename(PastFodderGrass_Demand = value) %>%
-      left_join(filter(L103.ag_Prod_Mt_R_C_Y, GCAM_commodity == "FodderGrass"),
+      left_join(filter(L101.ag_Prod_Mt_R_C_Y, GCAM_commodity == "FodderGrass"),
                 by = c("GCAM_region_ID", "year")) %>%                                                          # Map in FodderGrass production
       mutate(value = PastFodderGrass_Demand - value, GCAM_commodity = "Pasture") %>%                            # Compute Pasture supply as difference
       select(-feed, -PastFodderGrass_Demand) ->
@@ -153,8 +155,9 @@ module_aglu_LA108.ag_Feed_R_C_Y <- function(command, ...) {
     # If pasture demands are negative, this means FodderGrass production exceeds Pasture_FodderGrass demands
     # When this occurs, set pasture to zero and treat this quantity of foddergrass demand as an other use
     ag_Feed_Mt_R_Past_Y %>%
-      mutate(value = value * -1, GCAM_commodity = "FodderGrass") %>%                                            # Compute other uses of FodderGrass as excess supply
-      mutate(value = if_else(value < 0, 0, value)) ->                                                           # Zero out all other entries
+      mutate(value = -value,
+             GCAM_commodity = "FodderGrass",                                            # Compute other uses of FodderGrass as excess supply
+             value = if_else(value < 0, 0, value)) ->                                                           # Zero out all other entries
       ag_OtherUses_Mt_R_FodderGrass_Y
 
     # Now, adjust the pasture feeds to remove these other uses.
@@ -164,7 +167,7 @@ module_aglu_LA108.ag_Feed_R_C_Y <- function(command, ...) {
 
     # Adjust FodderGrass feed to reflect the shift in production from feed to other uses (calculated above)
     # FodderGrass used as feed = FodderGrass production - other uses
-    L103.ag_Prod_Mt_R_C_Y %>%
+    L101.ag_Prod_Mt_R_C_Y %>%
       filter(GCAM_commodity == "FodderGrass") %>%                                                          # Start with production of FodderGrass
       rename(Production = value) %>%
       left_join(ag_OtherUses_Mt_R_FodderGrass_Y, by = c("GCAM_commodity", "GCAM_region_ID", "year")) %>%   # Map in other uses
@@ -190,7 +193,7 @@ module_aglu_LA108.ag_Feed_R_C_Y <- function(command, ...) {
       ag_Feed_Mt_R_C_Y
 
     # Part 6: Compute net exports of FodderHerb
-    L103.ag_Prod_Mt_R_C_Y %>%
+    L101.ag_Prod_Mt_R_C_Y %>%
       filter(GCAM_commodity == "FodderHerb") %>%                                                          # Start with production of FodderHerb
       rename(Production = value) %>%
       left_join(ag_Feed_Mt_R_FodderHerb_Y, by = c("GCAM_commodity", "GCAM_region_ID", "year")) %>%        # Map in feed demand
@@ -214,7 +217,7 @@ module_aglu_LA108.ag_Feed_R_C_Y <- function(command, ...) {
       add_comments("Note: excess FodderGrass and FodderHerb production are mapped to OtherUses") %>%
       add_legacy_name("L108.ag_Feed_Mt_R_C_Y") %>%
       add_precursors("common/iso_GCAM_regID", "aglu/FAO/FAO_ag_items_cal_SUA", "L100.FAO_ag_Feed_t",
-                     "L103.ag_Prod_Mt_R_C_Y", "L107.an_Feed_Mt_R_C_Sys_Fd_Y") ->
+                     "L101.ag_Prod_Mt_R_C_Y", "L107.an_Feed_Mt_R_C_Sys_Fd_Y") ->
       L108.ag_Feed_Mt_R_C_Y
 
     ag_NetExp_Mt_R_FodderHerb_Y %>%

@@ -1,3 +1,5 @@
+# Copyright 2019 Battelle Memorial Institute; see the LICENSE file.
+
 #' module_aglu_L2042.resbio_input_irr_mgmt
 #'
 #' Produce a table of global Mill Residue Biomass Paramters by year, a table of regional Forest Residue Biomass Paramters by year, and a table of
@@ -13,22 +15,22 @@
 #' @details For Forest Residue Biomass, each GCAM region-commodity-GLU combination in L123.For_Prod_bm3_R_Y_GLU is converted to a
 #' region-supplySector-supplySubsector-ProductionTech combination, and externally set parameters are added to form the table of Forest
 #' residue biomass parameters for each region and year. For each region-supplySector-supplySubsector-ProductionTech combination in
-#' this table, base supply curves are read in from A_resbio_curves and then, in specified calibration years BASE_YEARS, replaced by
+#' this table, base supply curves are read in from A_resbio_curves and then, in specified calibration years MODEL_BASE_YEARS, replaced by
 #' fractions in  A_bio_frac_prod_R to form the table of Forest resbio supply curves for each region and year.
 #'
 #' For Mill Residue Biomass, sector, subsector, and technology combinations for NonFoodDeman_Forest are pulled from A_demand_technology,
 #' and externally set parameters are added to form the table of global Mill residue biomass parameters in each year. Sector, subsector,
 #' and technology combinations from this table are repeated for each GCAM region and year, base supply curves are read in from
-#' A_resbio_curves and then, in specified calibration years BASE_YEARS, replaced by fractions in  A_bio_frac_prod_R to form the table of
+#' A_resbio_curves and then, in specified calibration years MODEL_BASE_YEARS, replaced by fractions in  A_bio_frac_prod_R to form the table of
 #' Mill resbio supply curves for each region and year.
 #'
-#' For Agriculture Residue Biomass, each GCAM region-commodity-GLU combination in L103.ag_Prod_Mt_R_C_Y_GLU is converted to a
+#' For Agriculture Residue Biomass, each GCAM region-commodity-GLU combination in L101.ag_Prod_Mt_R_C_Y_GLU is converted to a
 #' region-supplySector-supplySubsector-ProductionTech combination, and parameters from L111.ag_resbio_R_C are joined and rounded
 #' for each region-supplySector. These parameters are then repeated for model years, irrigation types, and management technology levels.
 #' Finally, for each region-supplySector-supplySubsector-ProductionTech-irrigation-tech combination in this table, base
 #' supply curves are read in from A_resbio_curves to form the table of Agriculture resbio supply curves for each region and year.
 #' @importFrom assertthat assert_that
-#' @importFrom dplyr filter mutate select
+#' @importFrom dplyr bind_rows distinct filter if_else left_join mutate select
 #' @importFrom tidyr gather spread
 #' @author ACS July 2017
 module_aglu_L2042.resbio_input_irr_mgmt <- function(command, ...) {
@@ -39,7 +41,7 @@ module_aglu_L2042.resbio_input_irr_mgmt <- function(command, ...) {
              FILE = "aglu/A_resbio_curves",
              FILE = "aglu/A_bio_frac_prod_R",
              "L111.ag_resbio_R_C",
-             "L103.ag_Prod_Mt_R_C_Y_GLU",
+             "L101.ag_Prod_Mt_R_C_Y_GLU",
              "L123.For_Prod_bm3_R_Y_GLU"))
   } else if(command == driver.DECLARE_OUTPUTS) {
     return(c("L2042.AgResBio_For",
@@ -66,14 +68,14 @@ module_aglu_L2042.resbio_input_irr_mgmt <- function(command, ...) {
     A_resbio_curves <- get_data(all_data, "aglu/A_resbio_curves")
     A_bio_frac_prod_R <- get_data(all_data, "aglu/A_bio_frac_prod_R")
     L111.ag_resbio_R_C <- get_data(all_data, "L111.ag_resbio_R_C")
-    L103.ag_Prod_Mt_R_C_Y_GLU <- get_data(all_data, "L103.ag_Prod_Mt_R_C_Y_GLU")
+    L101.ag_Prod_Mt_R_C_Y_GLU <- get_data(all_data, "L101.ag_Prod_Mt_R_C_Y_GLU")
     L123.For_Prod_bm3_R_Y_GLU <- get_data(all_data, "L123.For_Prod_bm3_R_Y_GLU")
 
     # the following lines convert basin identification from the current GLU### level 1 names to the
     # level 2 names.
-    L103.ag_Prod_Mt_R_C_Y_GLU %>%
+    L101.ag_Prod_Mt_R_C_Y_GLU %>%
       replace_GLU(map = basin_to_country_mapping) ->
-      L103.ag_Prod_Mt_R_C_Y_GLU
+      L101.ag_Prod_Mt_R_C_Y_GLU
 
     L123.For_Prod_bm3_R_Y_GLU %>%
       replace_GLU(map = basin_to_country_mapping) ->
@@ -150,7 +152,7 @@ module_aglu_L2042.resbio_input_irr_mgmt <- function(command, ...) {
       write_to_all_regions(names = c("region", "AgSupplySector", "AgSupplySubsector", "AgProductionTechnology", "residue.biomass.production"),
                            GCAM_region_names) %>%
       filter(! region %in% aglu.NO_AGLU_REGIONS) %>%
-      repeat_add_columns(bind_cols(tibble(year = MODEL_YEARS))) %>%
+      repeat_add_columns(dplyr::bind_cols(tibble(year = MODEL_YEARS))) %>%
       mutate(colID = "Mill") %>%
       # bind to processed Forest data
       bind_rows(For.tmp) %>%
@@ -167,13 +169,13 @@ module_aglu_L2042.resbio_input_irr_mgmt <- function(command, ...) {
     # the GCAM_region's Base-year fraction of residue biomass produced by region for Forest/Mill as appropriate,
     # from assumption file A_bio_frac_prod_R
     For.Mill.tmp %>%
-      filter(price == aglu.PRICE_BIO_FRAC, year %in% BASE_YEARS) %>%
+      filter(price == aglu.PRICE_BIO_FRAC, year %in% MODEL_BASE_YEARS) %>%
       left_join_error_no_match(select(A_bio_frac_prod_R, region, For, Mill), by = "region") %>%
       select(-fract.harvested) %>%
       # assign appropriate fraction harvested based on colID
       mutate(fract.harvested = if_else(colID == "Mill", Mill, For)) %>%
       select(-For, -Mill) %>%
-      bind_rows(filter(For.Mill.tmp, !( price == aglu.PRICE_BIO_FRAC & year %in% BASE_YEARS))) ->
+      bind_rows(filter(For.Mill.tmp, !( price == aglu.PRICE_BIO_FRAC & year %in% MODEL_BASE_YEARS))) ->
       For.Mill.tmp2
 
     # Forest
@@ -195,7 +197,7 @@ module_aglu_L2042.resbio_input_irr_mgmt <- function(command, ...) {
 
     # AGRICULTURE RESIDUE BIO
     # 4. Form a table of Agricultural Residue Biomass Paramters by region-glu-year
-    L103.ag_Prod_Mt_R_C_Y_GLU %>%
+    L101.ag_Prod_Mt_R_C_Y_GLU %>%
       select(GCAM_region_ID, GCAM_commodity, GLU) %>%
       distinct %>%
       left_join_error_no_match(GCAM_region_names, by = "GCAM_region_ID") %>%
@@ -247,16 +249,16 @@ module_aglu_L2042.resbio_input_irr_mgmt <- function(command, ...) {
       add_title("Forest residue biomass supply curves") %>%
       add_units("Fraction Harvested") %>%
       add_comments("For each region-supplySector-supplySubsector-ProductionTech combination in L2042.AgResBio_For, ") %>%
-      add_comments("base supply curves are read in from A_resbio_curves and then in specified calibration years BASE_YEARS, ") %>%
+      add_comments("base supply curves are read in from A_resbio_curves and then in specified calibration years MODEL_BASE_YEARS, ") %>%
       add_comments("replaced by fractions in  A_bio_frac_prod_R to form the table of Forest resbio supply curves for each region and year.") %>%
       add_legacy_name("L2042.AgResBioCurve_For") %>%
       add_precursors("common/GCAM_region_names",
                      "water/basin_to_country_mapping",
                      "aglu/A_resbio_curves",
                      "aglu/A_bio_frac_prod_R",
-                     "L123.For_Prod_bm3_R_Y_GLU") %>%
-      add_flags(FLAG_PROTECT_FLOAT) ->
+                     "L123.For_Prod_bm3_R_Y_GLU") ->
       L2042.AgResBioCurve_For
+
     L204.GlobalResBio_Mill %>%
       add_title("Global mill residue biomass parameters") %>%
       add_units("Varies") %>%
@@ -266,11 +268,12 @@ module_aglu_L2042.resbio_input_irr_mgmt <- function(command, ...) {
       add_precursors("water/basin_to_country_mapping",
                      "aglu/A_demand_technology")  ->
       L2042.GlobalResBio_Mill
+
     L204.StubResBioCurve_Mill %>%
       add_title("Mill residue biomass supply curves") %>%
       add_units("Fraction harvested") %>%
       add_comments("Sector, subsector, and technology combinations from L2042.GlobalResBio_Mill are repeated for each GCAM region and year, ") %>%
-      add_comments("base supply curves are read in from A_resbio_curves and then in specified calibration years BASE_YEARS, ") %>%
+      add_comments("base supply curves are read in from A_resbio_curves and then in specified calibration years MODEL_BASE_YEARS, ") %>%
       add_comments("replaced by fractions in  A_bio_frac_prod_R to form the table of Mill resbio supply curves for each region and year.") %>%
       add_legacy_name("L2042.StubResBioCurve_Mill") %>%
       add_precursors("common/GCAM_region_names",
@@ -279,10 +282,11 @@ module_aglu_L2042.resbio_input_irr_mgmt <- function(command, ...) {
                      "aglu/A_resbio_curves",
                      "aglu/A_bio_frac_prod_R") ->
       L2042.StubResBioCurve_Mill
+
     L2042.AgResBio_ag_irr_mgmt %>%
       add_title("Agriculture residue biomass parameters") %>%
       add_units("Varies") %>%
-      add_comments("Each GCAM region-commodity-GLU combination in L103.ag_Prod_Mt_R_C_Y_GLU is converted ") %>%
+      add_comments("Each GCAM region-commodity-GLU combination in L101.ag_Prod_Mt_R_C_Y_GLU is converted ") %>%
       add_comments("to a region-supplySector-supplySubsector-ProductionTech combination, and parameters from L111.ag_resbio_R_C") %>%
       add_comments("are joined and rounded for each region-supplySector. These parameters are then repeated for model years, ") %>%
       add_comments("irrigation types, and management technology levels.") %>%
@@ -293,8 +297,9 @@ module_aglu_L2042.resbio_input_irr_mgmt <- function(command, ...) {
                      "aglu/A_resbio_curves",
                      "aglu/A_bio_frac_prod_R",
                      "L111.ag_resbio_R_C",
-                     "L103.ag_Prod_Mt_R_C_Y_GLU") ->
+                     "L101.ag_Prod_Mt_R_C_Y_GLU") ->
       L2042.AgResBio_ag_irr_mgmt
+
     L2042.AgResBioCurve_ag_irr_mgmt %>%
       add_title("Agriculture residue biomass supply curves") %>%
       add_units("Fraction harvested") %>%
@@ -307,8 +312,7 @@ module_aglu_L2042.resbio_input_irr_mgmt <- function(command, ...) {
                      "aglu/A_resbio_curves",
                      "aglu/A_bio_frac_prod_R",
                      "L111.ag_resbio_R_C",
-                     "L103.ag_Prod_Mt_R_C_Y_GLU") %>%
-      add_flags(FLAG_PROTECT_FLOAT) ->
+                     "L101.ag_Prod_Mt_R_C_Y_GLU") ->
       L2042.AgResBioCurve_ag_irr_mgmt
 
     return_data(L2042.AgResBio_For, L2042.AgResBioCurve_For, L2042.GlobalResBio_Mill, L2042.StubResBioCurve_Mill, L2042.AgResBio_ag_irr_mgmt, L2042.AgResBioCurve_ag_irr_mgmt)

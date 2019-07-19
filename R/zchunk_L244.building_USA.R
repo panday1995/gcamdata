@@ -1,3 +1,5 @@
+# Copyright 2019 Battelle Memorial Institute; see the LICENSE file.
+
 #' module_gcam.usa_L244.building_USA
 #'
 #' Creates GCAM-USA building output files for writing to xml.
@@ -18,7 +20,7 @@
 #' The corresponding file in the original data system was \code{L244.building_USA.R} (gcam-usa level2).
 #' @details Creates GCAM-USA building output files for writing to xml.
 #' @importFrom assertthat assert_that
-#' @importFrom dplyr filter mutate select
+#' @importFrom dplyr bind_rows distinct filter if_else group_by left_join mutate select semi_join summarise
 #' @importFrom tidyr gather spread
 #' @author RLH November 2017
 
@@ -147,13 +149,13 @@ module_gcam.usa_L244.building_USA <- function(command, ...) {
 
 
     # Need to delete the buildings sector in the USA region (gcam.consumers and supplysectors)
-    L244.DeleteConsumer_USAbld <- tibble(region = "USA", gcam.consumer = A44.gcam_consumer_en$gcam.consumer)
-    L244.DeleteSupplysector_USAbld <- tibble(region = "USA", supplysector = A44.sector_en$supplysector)
+    L244.DeleteConsumer_USAbld <- tibble(region = gcam.USA_REGION, gcam.consumer = A44.gcam_consumer_en$gcam.consumer)
+    L244.DeleteSupplysector_USAbld <- tibble(region = gcam.USA_REGION, supplysector = A44.sector_en$supplysector)
 
     # L244.SubregionalShares_gcamusa: subregional population and income shares (not currently used)
     L244.SubregionalShares_gcamusa <- write_to_all_states(A44.gcam_consumer, c("region", "gcam.consumer")) %>%
-      mutate(pop.year.fillout = min(BASE_YEARS),
-             inc.year.fillout = min(BASE_YEARS),
+      mutate(pop.year.fillout = min(MODEL_BASE_YEARS),
+             inc.year.fillout = min(MODEL_BASE_YEARS),
              subregional.population.share = 1,
              subregional.income.share = 1)
 
@@ -184,7 +186,7 @@ module_gcam.usa_L244.building_USA <- function(command, ...) {
     L244.Floorspace_full <- bind_rows(L244.Floorspace_resid, L244.Floorspace_comm)
 
     # Final output only has base years
-    L244.Floorspace_gcamusa <- filter(L244.Floorspace_full, year %in% BASE_YEARS)
+    L244.Floorspace_gcamusa <- filter(L244.Floorspace_full, year %in% MODEL_BASE_YEARS)
 
     # L244.DemandFunction_serv_gcamusa and L244.DemandFunction_flsp_gcamusa: demand function types
     L244.DemandFunction_serv_gcamusa <- write_to_all_states(A44.demandFn_serv, LEVEL2_DATA_NAMES[["DemandFunction_serv"]])
@@ -196,7 +198,7 @@ module_gcam.usa_L244.building_USA <- function(command, ...) {
       rename(region = state) %>%
       # Need to make sure that the satiation level is greater than the floorspace in the final base year
       left_join_error_no_match(L244.Floorspace_gcamusa %>%
-                                 filter(year == max(BASE_YEARS)), by = c("region", "gcam.consumer")) %>%
+                                 filter(year == max(MODEL_BASE_YEARS)), by = c("region", "gcam.consumer")) %>%
       left_join_error_no_match(L100.Pop_thous_state %>% rename(pop = value), by = c("region" = "state", "year")) %>%
       mutate(year = as.integer(year),
              # value.y = population
@@ -213,7 +215,7 @@ module_gcam.usa_L244.building_USA <- function(command, ...) {
 
     # We will filter GDP to energy.SATIATION_YEAR, but this may be greater than the historical years present
     # under timeshift conditions. So we adjust energy.SATIATION_YEAR
-    energy.SATIATION_YEAR <- min(max(BASE_YEARS), energy.SATIATION_YEAR)
+    energy.SATIATION_YEAR <- min(max(MODEL_BASE_YEARS), energy.SATIATION_YEAR)
 
     L244.SatiationAdder_gcamusa <- L244.Satiation_flsp_gcamusa %>%
       # Add per capita GDP
@@ -239,7 +241,7 @@ module_gcam.usa_L244.building_USA <- function(command, ...) {
     # First, separate the thermal from the generic services. Generic services will be assumed to produce
     # internal gain energy, so anything in the internal gains assumptions table will be assumed generic
     generic_services <- unique(A44.globaltech_intgains$supplysector)
-    thermal_services <- setdiff(unique(A44.sector$supplysector), generic_services)
+    thermal_services <- dplyr::setdiff(unique(A44.sector$supplysector), generic_services)
 
     # L244.HDDCDD: Heating and cooling degree days by scenario
     L244.HDDCDD_scen_state <- L143.HDDCDD_scen_state %>%
@@ -351,7 +353,7 @@ module_gcam.usa_L244.building_USA <- function(command, ...) {
 
     # L244.StubTechMarket_bld: Specify market names for fuel inputs to all technologies in each state
     L244.StubTechMarket_bld <- L244.end_use_eff %>%
-      mutate(market.name = "USA") %>%
+      mutate(market.name = gcam.USA_REGION) %>%
       rename(stub.technology = technology) %>%
       write_to_all_states(LEVEL2_DATA_NAMES[["StubTechMarket"]]) %>%
       # Electricity is consumed from state markets, so change market.name to states for electricity
@@ -409,7 +411,7 @@ module_gcam.usa_L244.building_USA <- function(command, ...) {
 
     # For calibration table, start with global tech efficiency table, repeat by states, and match in tech shares.
     L244.StubTechCalInput_bld_gcamusa <- L244.GlobalTechEff_bld %>%
-      filter(year %in% BASE_YEARS) %>%
+      filter(year %in% MODEL_BASE_YEARS) %>%
       write_to_all_states(names = c(names(.), "region")) %>%
       rename(supplysector = sector.name, subsector = subsector.name, stub.technology = technology) %>%
       # Using left_join because we don't have shares for all technologies, NAs will be set to 1
@@ -458,13 +460,13 @@ module_gcam.usa_L244.building_USA <- function(command, ...) {
 
     # L244.GlobalTechSCurve_bld: Retirement rates for building technologies
     L244.GlobalTechSCurve_bld <- L244.GlobalTechCost_bld_gcamusa %>%
-      filter(year %in% c(max(BASE_YEARS), FUTURE_YEARS),
+      filter(year %in% c(max(MODEL_BASE_YEARS), MODEL_FUTURE_YEARS),
              sector.name %in% A44.globaltech_retirement$supplysector) %>%
       # Add lifetimes and steepness
       left_join_error_no_match(A44.globaltech_retirement, by = c("sector.name" = "supplysector")) %>%
       # Set steepness/halflife values to stock for base years, new for future years
-      mutate(steepness = if_else(year == max(BASE_YEARS), steepness_stock, steepness_new),
-             half.life = if_else(year == max(BASE_YEARS), half_life_stock, half_life_new)) %>%
+      mutate(steepness = if_else(year == max(MODEL_BASE_YEARS), steepness_stock, steepness_new),
+             half.life = if_else(year == max(MODEL_BASE_YEARS), half_life_stock, half_life_new)) %>%
       select(LEVEL2_DATA_NAMES[["GlobalTechSCurve"]])
 
     # L244.GlobalTechIntGainOutputRatio: Output ratios of internal gain energy from non-thermal building services
@@ -518,7 +520,7 @@ module_gcam.usa_L244.building_USA <- function(command, ...) {
     # L244.GenericServiceSatiation_gcamusa: Satiation levels assumed for non-thermal building services
     # Just multiply the base-service by an exogenous multiplier
     L244.GenericServiceSatiation_gcamusa <- L244.GenericBaseService_gcamusa %>%
-      filter(year == max(BASE_YEARS)) %>%
+      filter(year == max(MODEL_BASE_YEARS)) %>%
       # Add floorspace
       left_join_error_no_match(L244.Floorspace_gcamusa, by = c(LEVEL2_DATA_NAMES[["BldNodes"]], "year")) %>%
       # Add multiplier
@@ -530,7 +532,7 @@ module_gcam.usa_L244.building_USA <- function(command, ...) {
 
     # L244.ThermalServiceSatiation: Satiation levels assumed for thermal building services
     L244.ThermalServiceSatiation_gcamusa <- L244.ThermalBaseService_gcamusa %>%
-      filter(year == max(BASE_YEARS)) %>%
+      filter(year == max(MODEL_BASE_YEARS)) %>%
       # Add floorspace
       left_join_error_no_match(L244.Floorspace_gcamusa, by = c(LEVEL2_DATA_NAMES[["BldNodes"]], "year")) %>%
       # Add multiplier
@@ -643,8 +645,7 @@ module_gcam.usa_L244.building_USA <- function(command, ...) {
       add_comments("L143.HDDCDD_scen_state assigned to GCAM subsectors") %>%
       add_legacy_name("L244.HDDCDD_A2_GFDL") %>%
       add_precursors("L143.HDDCDD_scen_state", "gcam-usa/A44.sector",
-                     "gcam-usa/calibrated_techs_bld_usa", "gcam-usa/A44.gcam_consumer") %>%
-      add_flags(FLAG_PROTECT_FLOAT)->
+                     "gcam-usa/calibrated_techs_bld_usa", "gcam-usa/A44.gcam_consumer") ->
       L244.HDDCDD_A2_GFDL
 
     L244.ThermalBaseService_gcamusa %>%

@@ -1,3 +1,5 @@
+# Copyright 2019 Battelle Memorial Institute; see the LICENSE file.
+
 #' module_emissions_L104.bcoc_en_USA_S_T_Y
 #'
 #' Creates USA BC and OC emission factors for combustion sectors
@@ -10,7 +12,7 @@
 #' original data system was \code{L104.bcoc_en_USA_S_T_Y.R} (emissions level1).
 #' @details 1990 USA BC and OC emissions are divided by year 2000 USA energy use to generate emission factors for GCAM aggregate sectors
 #' @importFrom assertthat assert_that
-#' @importFrom dplyr filter mutate select
+#' @importFrom dplyr filter funs group_by left_join mutate select summarize summarize_if
 #' @importFrom tidyr gather spread
 #' @author SJS May 2017
 module_emissions_L104.bcoc_en_USA_S_T_Y <- function(command, ...) {
@@ -123,12 +125,12 @@ module_emissions_L104.bcoc_en_USA_S_T_Y <- function(command, ...) {
     USA_bcoc_in_tg_1990 %>%
       # Still don't expect a complete match, so use left_join
       left_join(GCAM_energy_2000_byBCOC_agg,by = c("BCOC_agg_sector", "technology")) %>%
-      mutate(bc_em_factor = BC_em / Fuel_Use) %>%
-      mutate(oc_em_factor = OC_em / Fuel_Use) %>%
+      mutate(bc_em_factor = BC_em / Fuel_Use,
+             oc_em_factor = OC_em / Fuel_Use) %>%
       select(-BC_em, -OC_em, -Fuel_Use) %>%
       rename(sector = BCOC_agg_sector) %>%
       replace_na(list(bc_em_factor = 0, oc_em_factor = 0)) %>%
-      mutate_all(funs(replace(., is.infinite(.), 0))) ->
+      dplyr::mutate_all(funs(replace(., is.infinite(.), 0))) ->
       USA_BCOC_Emission_Factors
 
     # ===================================================

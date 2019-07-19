@@ -1,3 +1,5 @@
+# Copyright 2019 Battelle Memorial Institute; see the LICENSE file.
+
 #' module_energy_L244.building_det
 #'
 #' Creates level2 data for the building sector.
@@ -21,7 +23,7 @@
 #' The corresponding file in the original data system was \code{L244.building_det.R} (energy level2).
 #' @details Creates level2 data for the building sector.
 #' @importFrom assertthat assert_that
-#' @importFrom dplyr filter mutate select
+#' @importFrom dplyr bind_rows distinct filter if_else group_by left_join mutate select semi_join summarise
 #' @importFrom tidyr gather spread
 #' @author RLH September 2017
 
@@ -169,8 +171,8 @@ module_energy_L244.building_det <- function(command, ...) {
     # L244.SubregionalShares: subregional population and income shares (not currently used)
     L244.SubregionalShares <- write_to_all_regions(A44.gcam_consumer, LEVEL2_DATA_NAMES[["DeleteConsumer"]],
                                                    GCAM_region_names = GCAM_region_names) %>%
-      mutate(pop.year.fillout = min(BASE_YEARS),
-             inc.year.fillout = min(BASE_YEARS),
+      mutate(pop.year.fillout = min(MODEL_BASE_YEARS),
+             inc.year.fillout = min(MODEL_BASE_YEARS),
              subregional.population.share = 1,
              subregional.income.share = 1)
 
@@ -209,7 +211,7 @@ module_energy_L244.building_det <- function(command, ...) {
       select(region, gcam.consumer, nodeInput, building.node.input, year, base.building.size)
 
     L244.Floorspace <- bind_rows(L244.Floorspace_resid, L244.Floorspace_comm) %>%
-      filter(year %in% BASE_YEARS)
+      filter(year %in% MODEL_BASE_YEARS)
 
     # Demand function
     # L244.DemandFunction_serv and L244.DemandFunction_flsp: demand function types
@@ -281,7 +283,7 @@ module_energy_L244.building_det <- function(command, ...) {
       # Calculate pcFlsp and make sure it is smaller than the satiation level
       left_join_error_no_match(L102.pcgdp_thous90USD_Scen_R_Y %>%
                                  # This used to be filtered to energy.SATIATION_YEAR, changed to pass timeshift test
-                                 filter(year == max(BASE_YEARS)), by = c("region", "SSP" = "scenario")) %>%
+                                 filter(year == max(MODEL_BASE_YEARS)), by = c("region", "SSP" = "scenario")) %>%
       left_join_error_no_match(L244.Floorspace, by = c("region", "gcam.consumer", "year", "nodeInput", "building.node.input")) %>%
       left_join_error_no_match(L101.Pop_thous_R_Yh, by = c("GCAM_region_ID", "year", "region")) %>%
       mutate(pcFlsp_mm2 = base.building.size / pop_thous,
@@ -339,13 +341,13 @@ module_energy_L244.building_det <- function(command, ...) {
     # First, separate the thermal from the generic services. Generic services will be assumed to produce
     # internal gain energy, so anything in the internal gains assumptions table will be assumed generic
     generic_services <- unique(A44.internal_gains$supplysector)
-    thermal_services <- setdiff(unique(A44.sector$supplysector), generic_services)
+    thermal_services <- dplyr::setdiff(unique(A44.sector$supplysector), generic_services)
 
     # Base-service: filter only the model base years and change names as indicated in calibrated_techs_bld_det
     L244.base_service <- L144.base_service_EJ_serv %>%
       rename(base.service = value) %>%
       mutate(base.service = round(base.service, energy.DIGITS_CALOUTPUT)) %>%
-      filter(year %in% BASE_YEARS) %>%
+      filter(year %in% MODEL_BASE_YEARS) %>%
       left_join_keep_first_only(calibrated_techs_bld_det, by = c("sector", "service")) %>%
       left_join_error_no_match(GCAM_region_names, by = "GCAM_region_ID") %>%
       select(LEVEL2_DATA_NAMES[["BldNodes"]], building.service.input = supplysector, year, base.service)
@@ -400,8 +402,7 @@ module_energy_L244.building_det <- function(command, ...) {
           add_comments("Degree days are from L143.HDDCDD_scen_R_Y") %>%
           add_precursors("L143.HDDCDD_scen_R_Y", "common/GCAM_region_names",
                          "energy/A44.internal_gains", "energy/A44.sector", "L144.base_service_EJ_serv",
-                         "energy/calibrated_techs_bld_det") %>%
-          add_flags(FLAG_PROTECT_FLOAT)
+                         "energy/calibrated_techs_bld_det")
       })
 
     # Assign each tibble in list
@@ -431,7 +432,7 @@ module_energy_L244.building_det <- function(command, ...) {
 
     L244.flsp_bm2_R <- bind_rows(L144.flsp_bm2_R_res_Yh, L144.flsp_bm2_R_comm_Yh) %>%
       # Again, used to be energy.SATIATION_YEAR, changed to pass timeshift test
-      filter(year == max(BASE_YEARS)) %>%
+      filter(year == max(MODEL_BASE_YEARS)) %>%
       select(-year)
 
     L244.ServiceSatiation_USA <- L244.ServiceSatiation_USA %>%
@@ -455,7 +456,7 @@ module_energy_L244.building_det <- function(command, ...) {
     L244.BS <- L244.GenericBaseService %>%
       left_join_error_no_match(L244.Floorspace, by = c(LEVEL2_DATA_NAMES[["BldNodes"]], "year")) %>%
       mutate(service.per.flsp = base.service / base.building.size) %>%
-      filter(year == max(BASE_YEARS)) %>%
+      filter(year == max(MODEL_BASE_YEARS)) %>%
       select(LEVEL2_DATA_NAMES[["BldNodes"]], building.service.input, service.per.flsp)
 
     L244.GenericServiceSatiation <- L244.GenericServiceSatiation %>%
@@ -515,7 +516,7 @@ module_energy_L244.building_det <- function(command, ...) {
       mutate(variable = if_else(thermal.building.service.input %in% heating_services, "HDD", "CDD")) %>%
       left_join_error_no_match(L244.HDDCDD_normal_R_Y, by = c("region", "variable")) %>%
       group_by(gcam.consumer, variable) %>%
-      mutate(satiation.level = round(satiation.level * degree.days / degree.days[region == "USA"], digits = energy.DIGITS_CALOUTPUT)) %>%
+      mutate(satiation.level = round(satiation.level * degree.days / degree.days[region == gcam.USA_REGION], digits = energy.DIGITS_CALOUTPUT)) %>%
       ungroup()
 
     # The service satiation in the final cal year can not be lower than the observed demand, so need to use pmax to set a floor on the quantity
@@ -523,7 +524,7 @@ module_energy_L244.building_det <- function(command, ...) {
     L244.tmp <- L244.ThermalBaseService %>%
       left_join_error_no_match(L244.Floorspace, by = c(LEVEL2_DATA_NAMES[["BldNodes"]], "year")) %>%
       mutate(service.per.flsp = base.service / base.building.size) %>%
-      filter(year == max(BASE_YEARS)) %>%
+      filter(year == max(MODEL_BASE_YEARS)) %>%
       select(-base.service, - base.building.size, -year)
 
     # Then, match in this quantity into the thermal service satiation and take the max
@@ -598,25 +599,25 @@ module_energy_L244.building_det <- function(command, ...) {
 
     # L244.FuelPrefElast_bld: Fuel preference elasticities for buildings
     L244.FuelPrefElast_bld <- A44.fuelprefElasticity %>%
-      mutate(year.fillout = min(BASE_YEARS)) %>%
+      mutate(year.fillout = min(MODEL_BASE_YEARS)) %>%
       write_to_all_regions(LEVEL2_DATA_NAMES[["FuelPrefElast"]], GCAM_region_names = GCAM_region_names) %>%
       semi_join(L244.Tech_bld, by = c("region", "supplysector", "subsector"))
 
     # L244.FuelPrefElast_bld_SSP3: Fuel preference elasticities for buildings in SSP 3
     L244.FuelPrefElast_bld_SSP3 <- A44.fuelprefElasticity_SSP3 %>%
-      mutate(year.fillout = min(BASE_YEARS)) %>%
+      mutate(year.fillout = min(MODEL_BASE_YEARS)) %>%
       write_to_all_regions(LEVEL2_DATA_NAMES[["FuelPrefElast"]], GCAM_region_names = GCAM_region_names) %>%
       semi_join(L244.Tech_bld, by = c("region", "supplysector", "subsector"))
 
     # L244.FuelPrefElast_bld_SSP4: Fuel preference elasticities for buildings in SSP 4
     L244.FuelPrefElast_bld_SSP4 <- A44.fuelprefElasticity_SSP4 %>%
-      mutate(year.fillout = min(BASE_YEARS)) %>%
+      mutate(year.fillout = min(MODEL_BASE_YEARS)) %>%
       write_to_all_regions(LEVEL2_DATA_NAMES[["FuelPrefElast"]], GCAM_region_names = GCAM_region_names) %>%
       semi_join(L244.Tech_bld, by = c("region", "supplysector", "subsector"))
 
     # L244.FuelPrefElast_bld_SSP15: Fuel preference elasticities for buildings in SSP 1 & 5
     L244.FuelPrefElast_bld_SSP15 <- A44.fuelprefElasticity_SSP15 %>%
-      mutate(year.fillout = min(BASE_YEARS)) %>%
+      mutate(year.fillout = min(MODEL_BASE_YEARS)) %>%
       write_to_all_regions(LEVEL2_DATA_NAMES[["FuelPrefElast"]], GCAM_region_names = GCAM_region_names) %>%
       semi_join(L244.Tech_bld, by = c("region", "supplysector", "subsector"))
 
@@ -626,7 +627,7 @@ module_energy_L244.building_det <- function(command, ...) {
 
     # L244.StubTechCalInput_bld: Calibrated energy consumption by buildings technologies
     L244.StubTechCalInput_bld <- L144.in_EJ_R_bld_serv_F_Yh %>%
-      filter(year %in% BASE_YEARS) %>%
+      filter(year %in% MODEL_BASE_YEARS) %>%
       rename(calibrated.value = value) %>%
       mutate(calibrated.value = round(calibrated.value, energy.DIGITS_CALOUTPUT)) %>%
       left_join_error_no_match(GCAM_region_names, by = "GCAM_region_ID") %>%
@@ -702,7 +703,7 @@ module_energy_L244.building_det <- function(command, ...) {
       left_join_error_no_match(US.base.scalar, by = "variable") %>%
       left_join_error_no_match(L244.HDDCDD_normal_R_Y, by = c("region", "variable")) %>%
       group_by(thermal.building.service.input) %>%
-      mutate(scalar_mult = degree.days / degree.days[region == "USA"]) %>%
+      mutate(scalar_mult = degree.days / degree.days[region == gcam.USA_REGION]) %>%
       ungroup() %>%
       mutate(internal.gains.scalar = round(InternalGainsScalar_USA * scalar_mult, energy.DIGITS_HDDCDD)) %>%
       select(LEVEL2_DATA_NAMES[["Intgains_scalar"]])

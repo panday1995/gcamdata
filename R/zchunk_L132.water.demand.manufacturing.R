@@ -1,3 +1,5 @@
+# Copyright 2019 Battelle Memorial Institute; see the LICENSE file.
+
 #' module_water_L132.water.demand.manufacturing
 #'
 #' Computes manufacturing water withdrawals and consumption by nation/region and historical year
@@ -11,7 +13,7 @@
 #' @details Computes manufacturing energy use coefficients for water withdrawal
 #' and consumption for all regions.
 #' @importFrom assertthat assert_that
-#' @importFrom dplyr filter mutate select
+#' @importFrom dplyr filter if_else group_by inner_join left_join mutate select summarise
 #' @importFrom tidyr gather spread
 #' @author GPK June 2018
 module_water_L132.water.demand.manufacturing <- function(command, ...) {
@@ -115,16 +117,16 @@ module_water_L132.water.demand.manufacturing <- function(command, ...) {
       group_by(iso) %>%
       mutate(scaler = if_else(year == min(HISTORICAL_YEARS) & is.na(scaler),
                               scaler[year == min(year[!is.na(scaler)])],
-                              scaler)) %>%
-      mutate(scaler = approx_fun(year, scaler, rule = 2))
+                              scaler),
+             scaler = approx_fun(year, scaler, rule = 2))
 
     # Apply the scalers to the country-level estimates of mfg water withdrawals and consumption
     # Not all regions with industrial electricity are in aquastat; just set their scalers to 1 (i.e., keep them)
     L132.water_km3_ctry_ind_Yh <-
       left_join(L132.water_km3_ctry_ind_Yh, L132.scalers_ctry_ind_Yh,
                 by = c("iso", "year")) %>%
-      mutate(scaler = if_else(is.na(scaler), 1, scaler)) %>%
-      mutate(water_km3 = water_km3 * scaler) %>%
+      mutate(scaler = if_else(is.na(scaler), 1, scaler),
+             water_km3 = water_km3 * scaler) %>%
       select(-scaler)
 
     # Aggregating manufacturing water flow volumes to GCAM regions

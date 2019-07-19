@@ -1,3 +1,5 @@
+# Copyright 2019 Battelle Memorial Institute; see the LICENSE file.
+
 #' module_aglu_L242.ssp34_pasture
 #'
 #' Construct the managed and unmanaged pasture allocation datasets for SSP3 and SSP4
@@ -11,7 +13,7 @@
 #' @details For unmanaged and managed pasture, adjust data so that their ratio is 0.25 and add node leaf names.
 #' We do this for both historical and model base periods, isolating low-growth regions (defined by \code{aglu.LOW_GROWTH_PCGDP}).
 #' @importFrom assertthat assert_that
-#' @importFrom dplyr filter mutate select
+#' @importFrom dplyr filter left_join mutate pull select
 #' @importFrom tidyr gather spread
 #' @author BBL June 2017
 module_aglu_L242.ssp34_pasture <- function(command, ...) {
@@ -70,7 +72,7 @@ module_aglu_L242.ssp34_pasture <- function(command, ...) {
 
     # Model base period land cover, unmanaged land in the second nest
     L242.LC_bm2_R_Unmgd2_Yh_GLU.mlt %>%
-      filter(year %in% BASE_YEARS) %>%
+      filter(year %in% MODEL_BASE_YEARS) %>%
       select(region, LandAllocatorRoot, LandNode1, LandNode2, UnmanagedLandLeaf, year, allocation) ->
       L242.LN2_UnmgdAllocation_ALL
 
@@ -92,7 +94,7 @@ module_aglu_L242.ssp34_pasture <- function(command, ...) {
 
     # Model base period land cover, managed land in the second nest
     L242.LC_bm2_R_Mgd2_Yh_GLU.mlt %>%
-      filter(year %in% BASE_YEARS) %>%
+      filter(year %in% MODEL_BASE_YEARS) %>%
       select(region, LandAllocatorRoot, LandNode1, LandNode2, LandLeaf, year, allocation) ->
       L242.LN2_MgdAllocation_ALL
 

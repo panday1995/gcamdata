@@ -1,3 +1,5 @@
+# Copyright 2019 Battelle Memorial Institute; see the LICENSE file.
+
 #' module_energy_L254.transportation_UCD
 #'
 #' Calculate transportation data using information from the global UCD transportation technology database.
@@ -23,7 +25,7 @@
 #' technology database, and supplysector and subsector attributes are matched in from lookup tables.
 #' @importFrom assertthat assert_that
 #' @importFrom assertthat assert_that
-#' @importFrom dplyr filter mutate select
+#' @importFrom dplyr anti_join arrange bind_rows filter if_else group_by left_join mutate one_of pull select semi_join summarise
 #' @importFrom tidyr gather spread
 #' @author AJS September 2017
 module_energy_L254.transportation_UCD <- function(command, ...) {
@@ -399,7 +401,7 @@ module_energy_L254.transportation_UCD <- function(command, ...) {
     # L254.StubTranTechCalInput: calibrated input of tranTechnologies
     # L154.in_EJ_R_trn_m_sz_tech_F_Yh reports transportation energy consumption by GCAM region / mode / size class / technology / fuel / historical year
     L154.in_EJ_R_trn_m_sz_tech_F_Yh %>%
-      filter(year %in% BASE_YEARS) %>%
+      filter(year %in% MODEL_BASE_YEARS) %>%
       mutate(calibrated.value = round(value, energy.DIGITS_CALOUTPUT)) %>%
       left_join_error_no_match(GCAM_region_names, by = "GCAM_region_ID") %>%
       left_join_error_no_match(UCD_techs, by = c("UCD_sector", "mode", "size.class",
@@ -464,7 +466,7 @@ module_energy_L254.transportation_UCD <- function(command, ...) {
     # L254.StubTechCalInput_passthru: calibrated input of passthrough technologies
     # First, need to calculate the service output for all tranTechnologies (= calInput * loadFactor * unit_conversion / (coef * unit conversion))
     L254.StubTranTechCalInput %>%
-      select(-contains("share")) %>%
+      select(-dplyr::contains("share")) %>%
       left_join_error_no_match(L254.StubTranTechLoadFactor, by = c("region", "supplysector", "tranSubsector",
                                                                    "stub.technology", "year")) %>%
       left_join_error_no_match(L254.StubTranTechCoef, by = c("region", "supplysector", "tranSubsector",
@@ -476,7 +478,7 @@ module_energy_L254.transportation_UCD <- function(command, ...) {
 
     # The next step is to bind rows with all pass-through technologies on to this table
     A54.globaltech_passthru %>%
-      repeat_add_columns(tibble(year = BASE_YEARS)) %>%
+      repeat_add_columns(tibble(year = MODEL_BASE_YEARS)) %>%
       write_to_all_regions(c(LEVEL2_DATA_NAMES[["tranSubsector"]], "technology", "year", "minicam.energy.input"),
                            GCAM_region_names = GCAM_region_names) %>%
       rename(stub.technology = technology) %>%
@@ -500,7 +502,7 @@ module_energy_L254.transportation_UCD <- function(command, ...) {
       # remove the technologies that are not pass-through sectors
       semi_join(L254.StubTech_passthru, by = c("region", "supplysector", "tranSubsector", "stub.technology")) %>%
       # compute cumulative sum for use below
-      arrange(desc(minicam.energy.input)) %>%
+      arrange(dplyr::desc(minicam.energy.input)) %>%
       group_by(region, year) %>%
       mutate(output_cum = cumsum(output_agg)) %>%
       ungroup() ->
@@ -523,7 +525,7 @@ module_energy_L254.transportation_UCD <- function(command, ...) {
     # L254.StubTechProd_nonmotor: service output of non-motorized transportation technologies
     # L154.out_mpkm_R_trn_nonmotor_Yh reports service output by GCAM region / non-motorized transport mode / year
     L154.out_mpkm_R_trn_nonmotor_Yh %>%
-      filter(year %in% BASE_YEARS) %>%
+      filter(year %in% MODEL_BASE_YEARS) %>%
       mutate(calOutputValue = round(value, energy.DIGITS_MPKM)) %>%
       left_join_error_no_match(GCAM_region_names, by = "GCAM_region_ID") %>%
       left_join_error_no_match(A54.globaltech_nonmotor, by = c("mode" = "tranSubsector")) %>%
@@ -540,14 +542,14 @@ module_energy_L254.transportation_UCD <- function(command, ...) {
     # L254.PriceElasticity_trn: price elasticity of transportation final demand")
     # Price elasticities are only applied to future periods. Application in base years will cause solution failure
     A54.demand %>%
-      repeat_add_columns(tibble(year = FUTURE_YEARS)) %>%
+      repeat_add_columns(tibble(year = MODEL_FUTURE_YEARS)) %>%
       write_to_all_regions(LEVEL2_DATA_NAMES[["PriceElasticity"]], GCAM_region_names = GCAM_region_names) ->
       L254.PriceElasticity_trn # OUTPUT
 
     # L254.IncomeElasticity_trn: Income elasticity of transportation final demand
     # Income elasticities are only applied to future periods
     A54.demand %>%
-      repeat_add_columns(tibble(year = FUTURE_YEARS)) %>%
+      repeat_add_columns(tibble(year = MODEL_FUTURE_YEARS)) %>%
       write_to_all_regions(LEVEL2_DATA_NAMES[["IncomeElasticity"]], GCAM_region_names = GCAM_region_names) ->
       L254.IncomeElasticity_trn # OUTPUT
 

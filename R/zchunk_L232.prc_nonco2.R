@@ -1,3 +1,5 @@
+# Copyright 2019 Battelle Memorial Institute; see the LICENSE file.
+
 #' module_emissions_L232.prc_nonco2
 #'
 #' Generates input emissions by energy technology, GHG, and base historical year.
@@ -11,7 +13,7 @@
 #' original data system was \code{L232.prc_nonco2.R} (emissions level2).
 #' @details Generates input emissions by energy technology, GHG, and base historical year. Writes out max emissions reductions and steepness to all energy technologies and regions.
 #' @importFrom assertthat assert_that
-#' @importFrom dplyr filter mutate select
+#' @importFrom dplyr filter if_else left_join mutate select
 #' @importFrom tidyr gather spread
 #' @author RH July 2017
 module_emissions_L232.prc_nonco2 <- function(command, ...) {
@@ -67,7 +69,7 @@ module_emissions_L232.prc_nonco2 <- function(command, ...) {
     # L232.nonco2_max_reduction: maximum reduction for energy technologies in all regions
     L232.nonco2_max_reduction <- L232.nonco2_prc %>%
       select(region, supplysector, subsector, stub.technology, Non.CO2) %>%
-      repeat_add_columns(tibble(year = as.integer(BASE_YEARS))) %>%
+      repeat_add_columns(tibble(year = as.integer(MODEL_BASE_YEARS))) %>%
       mutate(ctrl.name = "GDP_control") %>%
       # Use left_join because L232.max_reduction is littered with NA values
       left_join(L232.max_reduction, by = c("region", "supplysector", "subsector", "stub.technology", "Non.CO2")) %>%
@@ -87,7 +89,7 @@ module_emissions_L232.prc_nonco2 <- function(command, ...) {
     # L232.nonco2_steepness: steepness of reduction for energy technologies in all regions
     L232.nonco2_steepness <- L232.nonco2_max_reduction %>%
       select(region, supplysector, subsector, stub.technology, Non.CO2) %>%
-      repeat_add_columns(tibble(year = as.integer(BASE_YEARS))) %>%
+      repeat_add_columns(tibble(year = as.integer(MODEL_BASE_YEARS))) %>%
       mutate(ctrl.name = "GDP_control") %>%
       # Use left_join because L232.steepness is littered with NA values
       left_join(L232.steepness, by = c("region", "supplysector", "subsector", "stub.technology", "Non.CO2")) %>%

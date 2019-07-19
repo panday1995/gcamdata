@@ -1,3 +1,5 @@
+# Copyright 2019 Battelle Memorial Institute; see the LICENSE file.
+
 #' module_energy_LA143.HDDCDD
 #'
 #' Reads in country level heating and cooling degree day data and returns GCAM region degree days via population weighting
@@ -10,7 +12,7 @@
 #' original data system was \code{LA143.HDDCDD.R} (energy level1).
 #' @details Population weights HDDCDD from country level to GCAM region
 #' @importFrom assertthat assert_that
-#' @importFrom dplyr filter mutate select
+#' @importFrom dplyr bind_rows filter if_else group_by left_join mutate select summarise
 #' @importFrom tidyr gather spread
 #' @author RH April 2017
 module_energy_LA143.HDDCDD <- function(command, ...) {
@@ -87,7 +89,7 @@ module_energy_LA143.HDDCDD <- function(command, ...) {
     L143.HDDCDD_scen_ctry_Y <- HDDCDD_data %>%
       # Drop file name
       select(-file) %>%
-      # Filter only useful years
+      # Filter only useful years. The method assumes that HDD/CDD is printed annually -> no interpolation performed
       filter(year %in% c(HISTORICAL_YEARS, FUTURE_YEARS)) %>%
       # Remove apostrophe in Cote d'Ivoire and add in country iso by country name
       mutate(country = if_else(country == "Cote d'Ivoire", "Cote dIvoire", country)) %>%

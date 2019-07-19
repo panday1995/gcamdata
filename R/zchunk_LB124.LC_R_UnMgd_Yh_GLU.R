@@ -1,3 +1,5 @@
+# Copyright 2019 Battelle Memorial Institute; see the LICENSE file.
+
 #' module_aglu_LB124.LC_R_UnMgd_Yh_GLU
 #'
 #' Adjust land cover data for unmanaged land types (shrub, grass, unmgd pasture, unmgd forest) in L120.LC_bm2_R_LT_Yh_GLU to deduct
@@ -22,7 +24,7 @@
 #' minus managed forest area in L123.LC_bm2_R_MgdFor_Yh_GLU.
 #'
 #' @importFrom assertthat assert_that
-#' @importFrom dplyr filter mutate select
+#' @importFrom dplyr bind_rows filter group_by left_join mutate select summarise
 #' @importFrom tidyr gather spread
 #' @author ACS August 2017
 module_aglu_LB124.LC_R_UnMgd_Yh_GLU <- function(command, ...) {
@@ -154,8 +156,7 @@ module_aglu_LB124.LC_R_UnMgd_Yh_GLU <- function(command, ...) {
       add_precursors("L120.LC_bm2_R_LT_Yh_GLU",
                      "L122.LC_bm2_R_ExtraCropLand_Yh_GLU",
                      "L123.LC_bm2_R_MgdPast_Yh_GLU",
-                     "L123.LC_bm2_R_MgdFor_Yh_GLU") %>%
-      add_flags(FLAG_PROTECT_FLOAT) ->
+                     "L123.LC_bm2_R_MgdFor_Yh_GLU") ->
       L124.LC_bm2_R_Shrub_Yh_GLU_adj
 
     L124.LC_bm2_R_LTunmgd_Yh_GLU_adj %>%
@@ -169,8 +170,7 @@ module_aglu_LB124.LC_R_UnMgd_Yh_GLU <- function(command, ...) {
       add_comments("type in each region-GLU-year so that the extra cropland is deducted from each unmanaged land") %>%
       add_comments("type according to its relative share.") %>%
       add_legacy_name("L124.LC_bm2_R_Grass_Yh_GLU_adj") %>%
-      same_precursors_as(L124.LC_bm2_R_Shrub_Yh_GLU_adj) %>%
-      add_flags(FLAG_PROTECT_FLOAT) ->
+      same_precursors_as(L124.LC_bm2_R_Shrub_Yh_GLU_adj) ->
       L124.LC_bm2_R_Grass_Yh_GLU_adj
 
     L124.LC_bm2_R_LTunmgd_Yh_GLU_adj %>%

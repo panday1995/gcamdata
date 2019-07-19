@@ -1,3 +1,5 @@
+# Copyright 2019 Battelle Memorial Institute; see the LICENSE file.
+
 #' module_aglu_L2062.ag_Fert_irr_mgmt
 #'
 #' Specifies fertilizer coefficients for all technologies; adjusts nonLandVariableCost to remove fertilizer cost.
@@ -12,7 +14,7 @@
 #' We assume coefficients (in kgN per kgCrop) are equal for all four technologies (irr v rfd; hi v lo).
 #' Adjust nonLandVariableCost to remove the now explicitly computed fertilizer cost.
 #' @importFrom assertthat assert_that
-#' @importFrom dplyr filter mutate select
+#' @importFrom dplyr bind_rows filter if_else left_join mutate select
 #' @importFrom tidyr gather spread
 #' @author KVC June 2017
 module_aglu_L2062.ag_Fert_irr_mgmt <- function(command, ...) {
@@ -47,7 +49,7 @@ module_aglu_L2062.ag_Fert_irr_mgmt <- function(command, ...) {
 
     # Process Fertilizer Coefficients: Copy coefficients to all four technologies (irr/rfd + hi/lo)
     L142.ag_Fert_IO_R_C_Y_GLU %>%
-      filter(year %in% BASE_YEARS) %>%
+      filter(year %in% MODEL_BASE_YEARS) %>%
       left_join_error_no_match(GCAM_region_names, by = "GCAM_region_ID") %>%
       left_join_error_no_match(basin_to_country_mapping[ c("GLU_code", "GLU_name")], by = c("GLU" = "GLU_code")) %>%
 
@@ -69,9 +71,9 @@ module_aglu_L2062.ag_Fert_irr_mgmt <- function(command, ...) {
     # Copy 2010 coefficients to all future years, bind with historic coefficients, then remove zeroes
     # Note: this assumes constant fertilizer coefficients in the future
     L2062.AgCoef_Fert_ag_irr_mgmt %>%
-      filter(year == max(BASE_YEARS)) %>%
+      filter(year == max(MODEL_BASE_YEARS)) %>%
       select(-year) %>%
-      repeat_add_columns(tibble::tibble(year = FUTURE_YEARS)) %>%
+      repeat_add_columns(tibble::tibble(year = MODEL_FUTURE_YEARS)) %>%
       bind_rows(L2062.AgCoef_Fert_ag_irr_mgmt) %>%
       filter(coefficient > 0) ->
       L2062.AgCoef_Fert_ag_irr_mgmt
@@ -95,8 +97,8 @@ module_aglu_L2062.ag_Fert_irr_mgmt <- function(command, ...) {
     # Map fertilizer coefficients to all bioenergy technologies
     L2052.AgCost_bio_irr_mgmt %>%
       select(-nonLandVariableCost) %>%                  # We are just using this data.frame to get the region/sector/tech names
-      mutate(minicam.energy.input = "N fertilizer") %>%
-      mutate(coefficient = if_else(grepl("^biomass_grass", AgSupplySubsector),
+      mutate(minicam.energy.input = "N fertilizer",
+             coefficient = if_else(grepl("^biomass_grass", AgSupplySubsector),
                                    bio_grass_coef$coefficient, bio_tree_coef$coefficient)) ->
       L2062.AgCoef_Fert_bio_irr_mgmt
 
@@ -111,8 +113,8 @@ module_aglu_L2062.ag_Fert_irr_mgmt <- function(command, ...) {
 
       # Calculate fertilizer cost using a fixed value (specified in constants.R in 2007$ per ton of NH3)
       # and the fertilizer coefficient calculated above. Subtract from original nonLandVariableCost.
-      mutate(FertCost = coefficient * aglu.FERT_COST * gdp_deflator(1975, 2007) * CONV_KG_T / CONV_NH3_N) %>%
-      mutate(nonLandVariableCost = round(nonLandVariableCost - FertCost, aglu.DIGITS_CALPRICE)) %>%
+      mutate(FertCost = coefficient * aglu.FERT_COST * gdp_deflator(1975, 2007) * CONV_KG_T / CONV_NH3_N,
+             nonLandVariableCost = round(nonLandVariableCost - FertCost, aglu.DIGITS_CALPRICE)) %>%
       select(-minicam.energy.input, -coefficient, -FertCost) ->
       L2062.AgCost_ag_irr_mgmt_adj
 
@@ -127,8 +129,8 @@ module_aglu_L2062.ag_Fert_irr_mgmt <- function(command, ...) {
 
       # Calculate fertilizer cost using a fixed value (specified in constants.R in 2007$ per ton of NH3)
       # and the fertilizer coefficient calculated above. Subtract from original nonLandVariableCost.
-      mutate(FertCost = coefficient * aglu.FERT_COST * gdp_deflator(1975, 2007) * CONV_KG_T / CONV_NH3_N) %>%
-      mutate(nonLandVariableCost = round(nonLandVariableCost - FertCost, aglu.DIGITS_CALPRICE)) %>%
+      mutate(FertCost = coefficient * aglu.FERT_COST * gdp_deflator(1975, 2007) * CONV_KG_T / CONV_NH3_N,
+             nonLandVariableCost = round(nonLandVariableCost - FertCost, aglu.DIGITS_CALPRICE)) %>%
       select(-minicam.energy.input, -coefficient, -FertCost) ->
       L2062.AgCost_bio_irr_mgmt_adj
 

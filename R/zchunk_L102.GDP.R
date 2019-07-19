@@ -1,3 +1,5 @@
+# Copyright 2019 Battelle Memorial Institute; see the LICENSE file.
+
 #' Join past GDP time series to future.
 #'
 #' When we have to join two GDP time series, we usually find that they don't
@@ -39,8 +41,8 @@
 #' @return Time series with the past and future joined as described in details.
 join.gdp.ts <- function(past, future, grouping) {
 
-    year <- gdp <- base.gdp <- gdp.ratio <- . <- scenario <-
-        NULL                            # silence notes on package check.
+  year <- gdp <- base.gdp <- gdp.ratio <- . <- scenario <-
+    NULL                            # silence notes on package check.
 
   if(! 'scenario' %in% names(future)) {
     ## This saves us having to make a bunch of exceptions below when we
@@ -106,7 +108,7 @@ join.gdp.ts <- function(past, future, grouping) {
 #' the generated outputs: \code{L102.gdp_mil90usd_Scen_R_Y}, \code{L102.pcgdp_thous90USD_Scen_R_Y}, \code{L102.gdp_mil90usd_GCAM3_R_Y}, \code{L102.gdp_mil90usd_GCAM3_ctry_Y}, \code{L102.pcgdp_thous90USD_GCAM3_R_Y}, \code{L102.pcgdp_thous90USD_GCAM3_ctry_Y}, \code{L102.PPP_MER_R}. The corresponding file in the
 #' original data system was \code{L102.GDP.R} (socioeconomics level1).
 #' @importFrom assertthat assert_that
-#' @importFrom dplyr filter mutate select
+#' @importFrom dplyr arrange bind_rows distinct filter full_join if_else group_by left_join mutate one_of select summarise transmute
 #' @importFrom tidyr gather spread
 #' @author RPL March 2017
 module_socioeconomics_L102.GDP <- function(command, ...) {
@@ -131,8 +133,8 @@ module_socioeconomics_L102.GDP <- function(command, ...) {
   } else if(command == driver.MAKE) {
 
     iso <- GCAM_region_ID <- value <- year <- gdp <- MODEL <- VARIABLE <-
-        UNIT <- SCENARIO <- scenario <- gdp.rate <- gdp.ratio <- population <-
-        pcgdp <- MER <- PPP <- region_GCAM3 <- agg_val <- share <-
+      UNIT <- SCENARIO <- scenario <- gdp.rate <- gdp.ratio <- population <-
+      pcgdp <- MER <- PPP <- region_GCAM3 <- agg_val <- share <-
       GCAM3_value <- base <- ratio <- value.x <- value.y <- NULL     # silence package check.
 
     all_data <- list(...)[[1]]
@@ -173,7 +175,7 @@ module_socioeconomics_L102.GDP <- function(command, ...) {
       change_iso_code('rou', 'rom') %>%
       left_join_error_no_match(iso_region32_lookup, by = 'iso') %>%
       protect_integer_cols %>%
-      select_if(function(x) {!any(is.na(x))}) %>% # apparently the SSP database has some missing in it; filter these out.
+      dplyr::select_if(function(x) {!any(is.na(x))}) %>% # apparently the SSP database has some missing in it; filter these out.
       unprotect_integer_cols %>%
       select(-MODEL, -iso, -VARIABLE, -UNIT) %>%
       gather_years(value_col = "gdp") %>%
@@ -183,7 +185,13 @@ module_socioeconomics_L102.GDP <- function(command, ...) {
       # just SSP1, SSP2, etc.
       group_by(scenario, GCAM_region_ID, year) %>%
       summarise(gdp = sum(gdp)) %>%
-      select(scenario, GCAM_region_ID, year, gdp)
+      select(scenario, GCAM_region_ID, year, gdp) %>%
+      ungroup() %>%
+      # The steps below write out the data to all future years, starting from the final socio historical year
+      complete(nesting(scenario, GCAM_region_ID), year = c(socioeconomics.FINAL_HIST_YEAR, FUTURE_YEARS)) %>%
+      group_by(scenario, GCAM_region_ID) %>%
+      mutate(gdp = approx_fun(year, gdp)) %>%
+      ungroup()
     ## Units are billions of 2005$
 
 
@@ -197,8 +205,8 @@ module_socioeconomics_L102.GDP <- function(command, ...) {
       change_iso_code('rou', 'rom') %>%
       gather(year, gdp.rate, -iso) %>%
       full_join(gdp_mil90usd_ctry %>% select(iso) %>% unique, by = 'iso') %>%
-      mutate(gdp.rate = if_else(gdp.rate == 'n/a', '0', gdp.rate)) %>% # Treat string 'n/a' as missing.
-      mutate(year = as.integer(year),
+      mutate(gdp.rate = if_else(gdp.rate == 'n/a', '0', gdp.rate), # Treat string 'n/a' as missing.
+             year = as.integer(year),
              gdp.rate = as.numeric(gdp.rate)) %>%
       replace_na(list(year = 2010)) %>% # have to do this for `complete` to work as expected.
       complete(iso, year) %>%
@@ -311,8 +319,12 @@ module_socioeconomics_L102.GDP <- function(command, ...) {
       filter(scenario == socioeconomics.BASE_POP_SCEN) %>%
       gather_years %>%
       mutate(value = as.numeric(value)) %>%
-      filter(year %in% FUTURE_YEARS) %>%
-      select(iso, year, value)
+      select(iso, year, value) %>%
+      complete(nesting(iso), year = c(socioeconomics.FINAL_HIST_YEAR, FUTURE_YEARS)) %>%
+      group_by(iso) %>%
+      mutate(value = approx_fun(year, value)) %>%
+      ungroup() %>%
+      filter(year %in% FUTURE_YEARS)
 
     # Historical GDP
     gdp_mil90usd_ctry_Yh <- L100.gdp_mil90usd_ctry_Yh %>%

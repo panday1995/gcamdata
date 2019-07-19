@@ -1,3 +1,5 @@
+# Copyright 2019 Battelle Memorial Institute; see the LICENSE file.
+
 #' module_emissions_L201.en_nonco2
 #'
 #' Generate non-CO2 emissions: pollutants, GHGs, non-CO2, BC/OCs, and reduction data.
@@ -11,7 +13,7 @@
 #' @details Set up all of the inputs needed for the energy system non-CO2 emissions in GCAM.
 #' This includes historical emissions, drivers (input or output), and pollution controls.
 #' @importFrom assertthat assert_that
-#' @importFrom dplyr filter mutate select
+#' @importFrom dplyr filter full_join left_join mutate pull select
 #' @importFrom tidyr gather spread
 #' @author BBL July 2017
 module_emissions_L201.en_nonco2 <- function(command, ...) {
@@ -85,7 +87,7 @@ module_emissions_L201.en_nonco2 <- function(command, ...) {
       filter(supplysector != "out_resources") %>%
       # add region name, extend emissions factors across all base years, and round output
       left_join_error_no_match(GCAM_region_names, by = "GCAM_region_ID") %>%
-      repeat_add_columns(tibble(year = BASE_YEARS)) %>%
+      repeat_add_columns(tibble(year = MODEL_BASE_YEARS)) %>%
       select(region, supplysector, subsector, stub.technology, year, emiss.coef = `2000`, Non.CO2) %>%
       mutate(emiss.coef = signif(emiss.coef, emissions.DIGITS_EMISSIONS)) ->
       L201.en_bcoc_emissions
@@ -139,7 +141,6 @@ module_emissions_L201.en_nonco2 <- function(command, ...) {
     # L201.nonghg_res: Pollutant emissions for energy resources in all regions
     L111.nonghg_tgej_R_en_S_F_Yh %>%
       filter(supplysector == "out_resources",
-             # interpolate_and_melt(L201.nonghg, emiss_model_base_years)
              year == emissions.FINAL_EMISS_YEAR) %>%
       left_join_error_no_match(GCAM_region_names, by = "GCAM_region_ID") %>%
       rename(depresource = subsector) %>%

@@ -1,3 +1,5 @@
+# Copyright 2019 Battelle Memorial Institute; see the LICENSE file.
+
 #' module_emissions_L111.nonghg_en_R_S_T_Y
 #'
 #' Calculate non-ghg emission totals and non-ghg emission shares of total emissions.
@@ -13,7 +15,7 @@
 #' shipping & aviation emission data calculated based on total emission and total emission shares. Finally, non-ghg emission
 #' totals and shares are calculated by GCAM sector, fuel, technology, and driver type for EDGAR historical years.
 #' @importFrom assertthat assert_that
-#' @importFrom dplyr filter mutate select
+#' @importFrom dplyr arrange bind_rows filter group_by left_join mutate right_join select summarise summarise_if
 #' @importFrom tidyr gather spread
 #' @author RC April 2018
 module_emissions_L111.nonghg_en_R_S_T_Y <- function(command, ...) {
@@ -109,11 +111,15 @@ module_emissions_L111.nonghg_en_R_S_T_Y <- function(command, ...) {
 
     # Compute EDGAR emissions by region and sector
     # Add gas names and combine all data together
-    L111.EDGAR <- bind_rows(EDGAR_SO2 %>% mutate(Non.CO2 = "SO2"),
-                            EDGAR_CO %>% mutate(Non.CO2 = "CO"),
-                            EDGAR_NOx %>% mutate(Non.CO2 = "NOx"),
-                            EDGAR_NH3 %>% mutate(Non.CO2 = "NH3"),
-                            EDGAR_NMVOC %>% mutate(Non.CO2 = "NMVOC") %>% select(-`2009`, -`2010`)) %>%
+
+    # Need to avoid triggering a (false positive) consecutive-mutate error
+    e_SO2 <- EDGAR_SO2 %>% mutate(Non.CO2 = "SO2")
+    e_CO <- EDGAR_CO %>% mutate(Non.CO2 = "CO")
+    e_NOx <- EDGAR_NOx %>% mutate(Non.CO2 = "NOx")
+    e_NH3 <- EDGAR_NH3 %>% mutate(Non.CO2 = "NH3")
+    e_NMVOC <- EDGAR_NMVOC %>% mutate(Non.CO2 = "NMVOC") %>% select(-`2009`, -`2010`)
+
+    L111.EDGAR <- bind_rows(e_SO2, e_CO, e_NOx, e_NH3, e_NMVOC) %>%
       # Match in EDGAR sectors, use left_join because there are NAs in the data
       left_join(EDGAR_sector %>% select(IPCC, EDGAR_agg_sector = agg_sector) %>% unique, by = "IPCC") %>%
       # Match in EDGAR countries, use left_join because there are NAs in the data
@@ -133,7 +139,7 @@ module_emissions_L111.nonghg_en_R_S_T_Y <- function(command, ...) {
     L111.EDGAR.agg <- L111.EDGAR %>%
       na.omit %>%
       group_by(GCAM_region_ID, Non.CO2, EDGAR_agg_sector) %>%
-      summarize_if(is.numeric, sum) %>%
+      summarise_if(is.numeric, sum) %>%
       ungroup %>%
       gather(year, EDGAR_emissions, -GCAM_region_ID, -Non.CO2, -EDGAR_agg_sector) %>%
       mutate(year = as.integer(year)) %>%
@@ -243,8 +249,7 @@ module_emissions_L111.nonghg_en_R_S_T_Y <- function(command, ...) {
                      "emissions/EDGAR/EDGAR_CO",
                      "emissions/EDGAR/EDGAR_NOx",
                      "emissions/EDGAR/EDGAR_NMVOC",
-                     "emissions/EDGAR/EDGAR_NH3") %>%
-      add_flags(FLAG_PROTECT_FLOAT) ->
+                     "emissions/EDGAR/EDGAR_NH3") ->
       L111.nonghg_tg_R_en_S_F_Yh
 
     L111.nonghg_tgej_R_en_S_F_Yh %>%
@@ -252,8 +257,7 @@ module_emissions_L111.nonghg_en_R_S_T_Y <- function(command, ...) {
       add_units("Tg/EJ") %>%
       add_comments("Use non-ghg emission totals by GCAM sector, fuel, technology, and driver type for EDGAR historical years to derive emission shares.") %>%
       add_legacy_name("L111.nonghg_tgej_R_en_S_F_Yh") %>%
-      same_precursors_as(L111.nonghg_tg_R_en_S_F_Yh) %>%
-      add_flags(FLAG_PROTECT_FLOAT) ->
+      same_precursors_as(L111.nonghg_tg_R_en_S_F_Yh) ->
       L111.nonghg_tgej_R_en_S_F_Yh
 
     return_data(L111.nonghg_tg_R_en_S_F_Yh, L111.nonghg_tgej_R_en_S_F_Yh)

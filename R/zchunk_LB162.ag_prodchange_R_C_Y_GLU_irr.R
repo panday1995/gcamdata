@@ -1,3 +1,5 @@
+# Copyright 2019 Battelle Memorial Institute; see the LICENSE file.
+
 #' module_aglu_LB162.ag_prodchange_R_C_Y_GLU_irr
 #'
 #' This module calculates the first level production/yield change assumptions that are exogenous to GCAM. These rates are calculated for each commodity
@@ -15,7 +17,7 @@
 #' (Yield Rate(year i) = Yield Ratio(year i) / Yield ratio(year i-1) ). Externally defined default yield rates are used to fill in missing data at the GCAM
 #' region-commodity-glu-irrigation level for all model years.
 #' @importFrom assertthat assert_that
-#' @importFrom dplyr filter mutate select
+#' @importFrom dplyr arrange bind_rows distinct filter group_by left_join mutate select semi_join summarise
 #' @importFrom tidyr gather spread
 #' @author ACS June 2017
 module_aglu_LB162.ag_prodchange_R_C_Y_GLU_irr <- function(command, ...) {
@@ -73,14 +75,14 @@ module_aglu_LB162.ag_prodchange_R_C_Y_GLU_irr <- function(command, ...) {
       group_by(country_ID, crop_ID, year) %>%
       mutate(Prod_kt_irrigated = replace(Prod_kt_irrigated,
                                          Prod_kt_irrigated == 0 & HA_kha_irrigated != 0,
-                                         Yield_kgHa_irrigated * HA_kha_irrigated * CONV_KG_T)) %>%
-      mutate(Prod_kt_rainfed = replace(Prod_kt_rainfed,
+                                         Yield_kgHa_irrigated * HA_kha_irrigated * CONV_KG_T),
+             Prod_kt_rainfed = replace(Prod_kt_rainfed,
                                        Prod_kt_rainfed == 0 & HA_kha_rainfed != 0,
-                                       Yield_kgHa_rainfed * HA_kha_rainfed * CONV_KG_T)) %>%
-      mutate(HA_kha_irrigated = replace(HA_kha_irrigated,
+                                       Yield_kgHa_rainfed * HA_kha_rainfed * CONV_KG_T),
+             HA_kha_irrigated = replace(HA_kha_irrigated,
                                         Prod_kt_irrigated == 0 & HA_kha_irrigated != 0,
-                                        0)) %>%
-      mutate(HA_kha_rainfed = replace(HA_kha_rainfed,
+                                        0),
+             HA_kha_rainfed = replace(HA_kha_rainfed,
                                       Prod_kt_rainfed == 0 & HA_kha_rainfed != 0,
                                       0)) %>%
       ungroup() ->
@@ -256,12 +258,12 @@ module_aglu_LB162.ag_prodchange_R_C_Y_GLU_irr <- function(command, ...) {
 
     L162.agBio_YieldRatio_R_C_Ysy_GLU_irr %>%
       left_join_error_no_match(timesteps, by = "year") %>%
-      mutate(lagyear = year + timestep) %>%
-      # There is no lag for aglu.SPEC_AG_PROD_YEARS[1] but there is for a year not in SPEC_AG_PROD_YEARS
-      # aglu.SPEC_AG_PROD_YEARS[1] gets left alone, so for lagyear = not in aglu.SPEC_AG_PROD_YEAR, overwrite
-      # the ratio to be 0.5, the timestep to be 1, and lagyear = SPEC_AG_PROD_YEAR[1]. This allows
-      # the same pipeline to be used for all aglu.SPEC_AG_PROD_YEARS
-      mutate(YieldRatio = replace(YieldRatio,
+      mutate(lagyear = year + timestep,
+             # There is no lag for aglu.SPEC_AG_PROD_YEARS[1] but there is for a year not in SPEC_AG_PROD_YEARS
+             # aglu.SPEC_AG_PROD_YEARS[1] gets left alone, so for lagyear = not in aglu.SPEC_AG_PROD_YEAR, overwrite
+             # the ratio to be 0.5, the timestep to be 1, and lagyear = SPEC_AG_PROD_YEAR[1]. This allows
+             # the same pipeline to be used for all aglu.SPEC_AG_PROD_YEARS
+             YieldRatio = replace(YieldRatio,
                                   ! lagyear %in% aglu.SPEC_AG_PROD_YEARS,
                                   0.5),
              timestep = replace(timestep,
@@ -412,8 +414,7 @@ module_aglu_LB162.ag_prodchange_R_C_Y_GLU_irr <- function(command, ...) {
                      "L151.ag_irrHA_ha_ctry_crop",
                      "L151.ag_rfdHA_ha_ctry_crop",
                      "L161.ag_irrProd_Mt_R_C_Y_GLU",
-                     "L161.ag_rfdProd_Mt_R_C_Y_GLU") %>%
-      add_flags(FLAG_PROTECT_FLOAT) ->
+                     "L161.ag_rfdProd_Mt_R_C_Y_GLU") ->
       L162.ag_YieldRate_R_C_Y_GLU_irr
 
     L162.bio_YieldRate_R_Y_GLU_irr %>%

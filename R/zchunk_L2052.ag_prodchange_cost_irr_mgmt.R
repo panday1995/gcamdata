@@ -1,3 +1,5 @@
+# Copyright 2019 Battelle Memorial Institute; see the LICENSE file.
+
 #' module_aglu_L2052.ag_prodchange_cost_irr_mgmt
 #'
 #' Specify production costs and future agricultural productivity changes for all technologies.
@@ -11,7 +13,7 @@
 #' @details This chunk maps the production costs of crops, biomass and forest to all four technologies (irrigated / rainfed; high / low),
 #' and calculates future productivity change of crops and biomass for all technologies along reference, high, low and SSP4 scenarios.
 #' @importFrom assertthat assert_that
-#' @importFrom dplyr filter mutate select
+#' @importFrom dplyr bind_rows filter mutate one_of pull select
 #' @importFrom tidyr gather spread
 #' @author RC July 2017
 module_aglu_L2052.ag_prodchange_cost_irr_mgmt <- function(command, ...) {
@@ -127,7 +129,7 @@ module_aglu_L2052.ag_prodchange_cost_irr_mgmt <- function(command, ...) {
     # Future agricultural productivity changes
     # Specify reference scenario agricultural productivity change for crops (not incl biomass)
     L162.ag_YieldRate_R_C_Y_GLU_irr %>%
-      filter(year %in% FUTURE_YEARS) %>%
+      filter(year %in% MODEL_FUTURE_YEARS) %>%
       mutate(AgProdChange = round(value, digits = aglu.DIGITS_AGPRODCHANGE)) %>%
       # If the final calibration year is less than the final historical year,
       # this method will return Inf for crops that are 0 in one year,
@@ -147,7 +149,7 @@ module_aglu_L2052.ag_prodchange_cost_irr_mgmt <- function(command, ...) {
 
     # Specify reference scenario agricultural productivity change for biomass
     L162.bio_YieldRate_R_Y_GLU_irr %>%
-      filter(year %in% FUTURE_YEARS) %>%
+      filter(year %in% MODEL_FUTURE_YEARS) %>%
       mutate(AgProdChange = round(value, digits = aglu.DIGITS_AGPRODCHANGE)) %>%
       left_join_error_no_match(GCAM_region_names, by = "GCAM_region_ID") %>%
       left_join_error_no_match(basin_to_country_mapping[c("GLU_code", "GLU_name")], by = c("GLU" = "GLU_code")) ->
@@ -159,7 +161,7 @@ module_aglu_L2052.ag_prodchange_cost_irr_mgmt <- function(command, ...) {
       unique() %>%
       bind_rows(unique(select(L201.AgYield_bio_tree, one_of(names_AgTech)))) %>%
       # Copy to all future years
-      repeat_add_columns(tibble(year = FUTURE_YEARS)) %>%
+      repeat_add_columns(tibble(year = MODEL_FUTURE_YEARS)) %>%
       # Copy to both irrigated and rainfed technologies
       repeat_add_columns(tibble(IRR_RFD = c("IRR", "RFD"))) %>%
       # Separate the AgProductionTechnology variable to get GLU names for matching in the yield change rates
@@ -281,8 +283,7 @@ module_aglu_L2052.ag_prodchange_cost_irr_mgmt <- function(command, ...) {
       add_comments("The same productivity change are assigned to both high and low management") %>%
       add_legacy_name("L2052.AgProdChange_irr_high") %>%
       same_precursors_as("L2052.AgProdChange_ag_irr_ref") %>%
-      add_precursors("L102.pcgdp_thous90USD_Scen_R_Y") %>%
-      add_flags(FLAG_PROTECT_FLOAT) ->
+      add_precursors("L102.pcgdp_thous90USD_Scen_R_Y") ->
       L2052.AgProdChange_irr_high
 
     L2052.AgProdChange_irr_low %>%
@@ -304,8 +305,7 @@ module_aglu_L2052.ag_prodchange_cost_irr_mgmt <- function(command, ...) {
       add_comments("Region groups by income level are based on the 2010 GDP per capita") %>%
       add_legacy_name("L2052.AgProdChange_irr_ssp4") %>%
       same_precursors_as("L2052.AgProdChange_ag_irr_ref") %>%
-      add_precursors("L102.pcgdp_thous90USD_Scen_R_Y") %>%
-      add_flags(FLAG_PROTECT_FLOAT) ->
+      add_precursors("L102.pcgdp_thous90USD_Scen_R_Y") ->
       L2052.AgProdChange_irr_ssp4
 
     return_data(L2052.AgCost_ag_irr_mgmt, L2052.AgCost_bio_irr_mgmt,

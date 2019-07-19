@@ -1,3 +1,5 @@
+# Copyright 2019 Battelle Memorial Institute; see the LICENSE file.
+
 #' module_gcam.usa_LA143.HDDCDD
 #'
 #' Estimate heating and cooling degree days for gcam-usa.
@@ -10,7 +12,7 @@
 #' original data system was \code{LA143.HDDCDD.R} (gcam-usa level1).
 #' @details Estimate heating and cooling degree days for gcam-usa.
 #' @importFrom assertthat assert_that
-#' @importFrom dplyr filter mutate select
+#' @importFrom dplyr arrange bind_rows filter if_else group_by inner_join left_join mutate select summarise
 #' @importFrom tidyr gather spread
 #' @author KRD Nov 2017
 module_gcam.usa_LA143.HDDCDD <- function(command, ...) {
@@ -202,10 +204,10 @@ module_gcam.usa_LA143.HDDCDD <- function(command, ...) {
       separate(col = file, into = c("variable", "GCM", "Scen"), sep = "_") ->
       HDDCDD_data
 
-    # Interpolate heating and cooling degree days for historical model years and any any missing future years.
+    # Interpolate heating and cooling degree days for all historical and future years
     HDDCDD_data %>%
       gather_years %>%
-      complete(nesting(variable, GCM, Scen, state), year = c(HISTORICAL_YEARS, year, FUTURE_YEARS)) %>%
+      complete(nesting(variable, GCM, Scen, state), year = c(HISTORICAL_YEARS, FUTURE_YEARS)) %>%
       arrange(variable, GCM, Scen, state, year) %>%
       group_by(variable, GCM, Scen, state) %>%
       mutate(value = approx_fun(year, value, rule = 2)) %>%
@@ -222,7 +224,7 @@ module_gcam.usa_LA143.HDDCDD <- function(command, ...) {
 
     # Fill in any missing historical cooling degree days through interpolation.
     CDD_His_subregion %>%
-      complete(nesting(state, subregion9, subregion13), year = c(HISTORICAL_YEARS, year)) %>%
+      complete(nesting(state, subregion9, subregion13), year = c(HISTORICAL_YEARS)) %>%
       arrange(state, subregion9, subregion13, year) %>%
       group_by(state, subregion9, subregion13) %>%
       mutate(value = approx_fun(year, value, rule = 2), variable = "CDD") %>%
@@ -231,7 +233,7 @@ module_gcam.usa_LA143.HDDCDD <- function(command, ...) {
 
     # Fill in any missing historical heating degree days through interpolation.
     HDD_His_subregion %>%
-      complete(nesting(state, subregion9, subregion13), year = c(HISTORICAL_YEARS, year)) %>%
+      complete(nesting(state, subregion9, subregion13), year = c(HISTORICAL_YEARS)) %>%
       arrange(state, subregion9, subregion13, year) %>%
       group_by(state, subregion9, subregion13) %>%
       mutate(value = approx_fun(year, value, rule = 2), variable = "HDD") %>%
