@@ -1,6 +1,8 @@
 # File: CEDS_GCAM_fuel.csv
 # Title: Convert CEDS_fuel code to GCAM_fuel name
 # Units: NA
+# Column types: cc
+# ----------
 CEDS_Fuel,GCAM_fuel
 biomass,biomass
 diesel_oil,refined liquids

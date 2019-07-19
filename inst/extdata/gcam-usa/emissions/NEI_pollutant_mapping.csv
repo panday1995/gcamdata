@@ -1,6 +1,8 @@
 # File: NEI_pollutant_mapping.csv
 # Title: mapping file for NEI pollutants and GCAM pollutants
 # Units: NA
+# Column types: cc
+# ----------
 NEI_pollutant,Non.CO2
 Ammonia,NH3
 Nitrogen Oxides,NOx
