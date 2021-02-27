@@ -17,6 +17,9 @@ trn_freight_road,Medium truck,NG,share-weight,final-calibration-year,2050,linear
 trn_freight_road,Heavy truck,Liquids,share-weight,final-calibration-year,end-year,fixed
 trn_freight_road,Heavy truck,NG,share-weight,final-calibration-year,2050,linear
 trn_freight_road,Light truck,NG,share-weight,final-calibration-year,2050,linear
+trn_freight_road,Light truck,FCEV,share-weight,final-calibration-year,2020,linear
+trn_freight_road,Medium truck,FCEV,share-weight,final-calibration-year,2020,linear
+trn_freight_road,Heavy truck,FCEV,share-weight,final-calibration-year,2020,linear
 trn_pass,Passenger Rail,Electric,share-weight,final-calibration-year,end-year,fixed
 trn_pass,Passenger Rail,Liquids,share-weight,final-calibration-year,end-year,fixed
 trn_pass,Passenger Rail,Tech-Adv-Electric,share-weight,final-calibration-year,end-year,fixed

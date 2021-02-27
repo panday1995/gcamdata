@@ -16,6 +16,9 @@ trn_freight_road,Light truck,Liquids,final-calibration-year,25,12,0.193
 trn_freight_road,Light truck,NG,final-calibration-year,25,12,0.193
 trn_freight_road,Light truck,Liquids,final-calibration-year,25,12,0.193
 trn_freight_road,Light truck,NG,final-calibration-year,25,12,0.193
+trn_freight_road,Light truck,FCEV,final-calibration-year,25,12,0.193
+trn_freight_road,Medium truck,FCEV,final-calibration-year,25,12,0.193
+trn_freight_road,Heavy truck,FCEV,final-calibration-year,25,12,0.193
 trn_pass_road_LDV_4W,Car,BEV,final-calibration-year,25,11,0.218
 trn_pass_road_LDV_4W,Car,FCEV,final-calibration-year,25,11,0.218
 trn_pass_road_LDV_4W,Car,Hybrid Liquids,final-calibration-year,25,11,0.218

@@ -18,6 +18,9 @@ trn_freight_road,Medium truck,Liquids,1,1,1,1,1,1
 trn_freight_road,Medium truck,NG,0,0,1,1,1,1
 trn_freight_road,Heavy truck,Liquids,1,1,1,1,1,1
 trn_freight_road,Heavy truck,NG,0,0,1,1,1,1
+trn_freight_road,Light truck,FCEV,0,0,0,1,1,1
+trn_freight_road,Medium truck,FCEV,0,0,0,1,1,1
+trn_freight_road,Heavy truck,FCEV,0,0,0,1,1,1
 trn_pass,Cycle,Cycle,1,1,1,1,1,1
 trn_pass,Domestic Aviation,Liquids,1,1,1,1,1,1
 trn_pass,HSR,Electric,0,0,1,1,1,1
