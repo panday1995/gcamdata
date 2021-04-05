@@ -33,6 +33,7 @@ trn_freight_road,Truck (0-4.5t),Liquids,share-weight,final-calibration-year,end-
 trn_freight_road,Truck (0-4.5t),NG,share-weight,final-calibration-year,2050,linear
 trn_freight_road,Truck (0-6t),Liquids,share-weight,final-calibration-year,end-year,fixed
 trn_freight_road,Truck (0-6t),NG,share-weight,final-calibration-year,2050,linear
+trn_freight_road,Truck (0-6t),FCEV,share-weight,final-calibration-year,2050,linear
 trn_freight_road,Truck (1-6t),Liquids,share-weight,final-calibration-year,end-year,fixed
 trn_freight_road,Truck (1-6t),NG,share-weight,final-calibration-year,2050,linear
 trn_freight_road,Truck (16-32t),Liquids,share-weight,final-calibration-year,end-year,fixed
@@ -51,6 +52,7 @@ trn_freight_road,Truck (5-9t),Liquids,share-weight,final-calibration-year,end-ye
 trn_freight_road,Truck (5-9t),NG,share-weight,final-calibration-year,2050,linear
 trn_freight_road,Truck (6-14t),Liquids,share-weight,final-calibration-year,end-year,fixed
 trn_freight_road,Truck (6-14t),NG,share-weight,final-calibration-year,2050,linear
+trn_freight_road,Truck (6-14t),FCEV,share-weight,final-calibration-year,2050,linear
 trn_freight_road,Truck (6-15t),Liquids,share-weight,final-calibration-year,end-year,fixed
 trn_freight_road,Truck (6-15t),NG,share-weight,final-calibration-year,2050,linear
 trn_freight_road,Truck (6-30t),Liquids,share-weight,final-calibration-year,end-year,fixed
