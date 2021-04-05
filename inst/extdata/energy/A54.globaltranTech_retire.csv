@@ -13,8 +13,10 @@ trn_freight_road,Truck (>12t),Liquids,final-calibration-year,25,12,0.193
 trn_freight_road,Truck (>12t),NG,final-calibration-year,25,12,0.193
 trn_freight_road,Truck (>14t),Liquids,final-calibration-year,25,12,0.193
 trn_freight_road,Truck (>14t),NG,final-calibration-year,25,12,0.193
+trn_freight_road,Truck (>14t),FCEV,final-calibration-year,25,12,0.193
 trn_freight_road,Truck (>15t),Liquids,final-calibration-year,25,12,0.193
 trn_freight_road,Truck (>15t),NG,final-calibration-year,25,12,0.193
+trn_freight_road,Truck (>15t),FCEV,final-calibration-year,25,12,0.193
 trn_freight_road,Truck (>32t),Liquids,final-calibration-year,25,12,0.193
 trn_freight_road,Truck (>32t),NG,final-calibration-year,25,12,0.193
 trn_freight_road,Truck (0-1t),Liquids,final-calibration-year,25,12,0.193
@@ -29,6 +31,7 @@ trn_freight_road,Truck (0-4.5t),Liquids,final-calibration-year,25,12,0.193
 trn_freight_road,Truck (0-4.5t),NG,final-calibration-year,25,12,0.193
 trn_freight_road,Truck (0-6t),Liquids,final-calibration-year,25,12,0.193
 trn_freight_road,Truck (0-6t),NG,final-calibration-year,25,12,0.193
+trn_freight_road,Truck (0-6t),FCEV,final-calibration-year,25,12,0.193
 trn_freight_road,Truck (1-6t),Liquids,final-calibration-year,25,12,0.193
 trn_freight_road,Truck (1-6t),NG,final-calibration-year,25,12,0.193
 trn_freight_road,Truck (16-32t),Liquids,final-calibration-year,25,12,0.193
@@ -47,6 +50,7 @@ trn_freight_road,Truck (5-9t),Liquids,final-calibration-year,25,12,0.193
 trn_freight_road,Truck (5-9t),NG,final-calibration-year,25,12,0.193
 trn_freight_road,Truck (6-14t),Liquids,final-calibration-year,25,12,0.193
 trn_freight_road,Truck (6-14t),NG,final-calibration-year,25,12,0.193
+trn_freight_road,Truck (6-14t),FCEV,final-calibration-year,25,12,0.193
 trn_freight_road,Truck (6-15t),Liquids,final-calibration-year,25,12,0.193
 trn_freight_road,Truck (6-15t),NG,final-calibration-year,25,12,0.193
 trn_freight_road,Truck (6-30t),Liquids,final-calibration-year,25,12,0.193

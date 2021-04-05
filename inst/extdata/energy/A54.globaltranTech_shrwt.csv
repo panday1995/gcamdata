@@ -17,8 +17,10 @@ trn_freight_road,Truck,Liquids,1,1,1,1,1,1
 trn_freight_road,Truck,NG,0,0,1,1,1,1
 trn_freight_road,Truck (>12t),Liquids,1,1,1,1,1,1
 trn_freight_road,Truck (>12t),NG,0,0,1,1,1,1
+trn_freight_road,Truck (>12t),FCEV,0,0,0,1,1,1
 trn_freight_road,Truck (>14t),Liquids,1,1,1,1,1,1
 trn_freight_road,Truck (>14t),NG,0,0,1,1,1,1
+trn_freight_road,Truck (>14t),FCEV,0,0,0,1,1,1
 trn_freight_road,Truck (>15t),Liquids,1,1,1,1,1,1
 trn_freight_road,Truck (>15t),NG,0,0,1,1,1,1
 trn_freight_road,Truck (>32t),Liquids,1,1,1,1,1,1
@@ -35,6 +37,7 @@ trn_freight_road,Truck (0-4.5t),Liquids,1,1,1,1,1,1
 trn_freight_road,Truck (0-4.5t),NG,0,0,1,1,1,1
 trn_freight_road,Truck (0-6t),Liquids,1,1,1,1,1,1
 trn_freight_road,Truck (0-6t),NG,0,0,1,1,1,1
+trn_freight_road,Truck (0-6t),FCEV,0,0,0,1,1,1
 trn_freight_road,Truck (1-6t),Liquids,1,1,1,1,1,1
 trn_freight_road,Truck (1-6t),NG,0,0,1,1,1,1
 trn_freight_road,Truck (16-32t),Liquids,1,1,1,1,1,1
@@ -53,8 +56,10 @@ trn_freight_road,Truck (5-9t),Liquids,1,1,1,1,1,1
 trn_freight_road,Truck (5-9t),NG,0,0,1,1,1,1
 trn_freight_road,Truck (6-14t),Liquids,1,1,1,1,1,1
 trn_freight_road,Truck (6-14t),NG,0,0,1,1,1,1
+trn_freight_road,Truck (6-14t),FCEV,0,0,0,1,1,1
 trn_freight_road,Truck (6-15t),Liquids,1,1,1,1,1,1
 trn_freight_road,Truck (6-15t),NG,0,0,1,1,1,1
+trn_freight_road,Truck (6-15t),FCEV,0,0,0,1,1,1
 trn_freight_road,Truck (6-30t),Liquids,1,1,1,1,1,1
 trn_freight_road,Truck (6-30t),NG,0,0,1,1,1,1
 trn_freight_road,Truck (9-16t),Liquids,1,1,1,1,1,1
