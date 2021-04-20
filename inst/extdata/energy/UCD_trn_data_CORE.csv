@@ -199,14 +199,13 @@ China,Freight,Truck,3W Rural,Liquids,Liquids,CAPEX and non-fuel OPEX,2005$/vkt,0
 China,Freight,Truck,3W Rural,NG,Natural Gas,CAPEX and non-fuel OPEX,2005$/vkt,0.2992,0.2932,0.2873,0.2813,0.2813,0.2813,0.2813
 China,Freight,Truck,Truck (0-6t),Liquids,Liquids,CAPEX and non-fuel OPEX,2005$/vkt,0.4095,0.4095,0.4095,0.4095,0.4095,0.4095,0.4095
 China,Freight,Truck,Truck (0-6t),NG,Natural Gas,CAPEX and non-fuel OPEX,2005$/vkt,0.5386,0.5278,0.5171,0.5063,0.5063,0.5063,0.5063
-China,Freight,Truck,Truck (0-6t),FCEV,Hydrogen,CAPEX and non-fuel OPEX,2005$/vkt,0.5386,0.5278,0.5171,0.5063,0.5063,0.5063,0.5063
+China,Freight,Truck,Truck (0-6t),FCEV,Hydrogen,CAPEX and non-fuel OPEX,2005$/vkt,9999,9999,9999,9999,9999,9999,9999
 China,Freight,Truck,Truck (6-14t),Liquids,Liquids,CAPEX and non-fuel OPEX,2005$/vkt,0.4566,0.4566,0.4566,0.4566,0.4566,0.4566,0.4566
 China,Freight,Truck,Truck (6-14t),NG,Natural Gas,CAPEX and non-fuel OPEX,2005$/vkt,0.6006,0.5886,0.5766,0.5646,0.5646,0.5646,0.5646
-China,Freight,Truck,Truck (6-14t),FCEV,Hydrogen,CAPEX and non-fuel OPEX,2005$/vkt,0.6006,0.5886,0.5766,0.5646,0.5646,0.5646,0.5646
+China,Freight,Truck,Truck (6-14t),FCEV,Hydrogen,CAPEX and non-fuel OPEX,2005$/vkt,9999,9999,9999,9999,9999,9999,9999
 China,Freight,Truck,Truck (>14t),Liquids,Liquids,CAPEX and non-fuel OPEX,2005$/vkt,0.4775,0.4775,0.4775,0.4775,0.4775,0.4775,0.4775
 China,Freight,Truck,Truck (>14t),NG,Natural Gas,CAPEX and non-fuel OPEX,2005$/vkt,0.628,0.6154,0.6029,0.5904,0.5904,0.5904,0.5904
-China,Freight,Truck,Truck (>14t),FCEV,Hydrogen,CAPEX and non-fuel OPEX,2005$/vkt,0.628,0.6154,0.6029,0.5904,0.5904,0.5904,0.5904
-Eastern Europe,Passenger,Bus,All,Liquids,Liquids,CAPEX and non-fuel OPEX,2005$/vkt,3.1843,3.1843,3.1843,3.1843,3.1843,3.1843,3.1843
+China,Freight,Truck,Truck (>14t),FCEV,Hydrogen,CAPEX and non-fuel OPEX,2005$/vkt,9999,9999,9999,9999,9999,9999,9999
 Eastern Europe,Passenger,Bus,All,NG,Natural Gas,CAPEX and non-fuel OPEX,2005$/vkt,3.4361,3.4361,3.4361,3.4361,3.4361,3.4361,3.4361
 Eastern Europe,Passenger,HSR,All,Electric,Electricity,CAPEX and non-fuel OPEX,2005$/vkt,14.7352,14.7352,14.7369,12.2822,12.2836,12.285,12.2864
 Eastern Europe,Passenger,Rail,All,Liquids,Liquids,CAPEX and non-fuel OPEX,2005$/vkt,4.8262,4.8293,4.8324,4.8354,4.8384,4.8414,4.8445
